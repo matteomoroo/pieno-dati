@@ -1,0 +1,67 @@
+[
+  {
+    "date": "2026-07-21",
+    "averages": {
+      "benzina": 1.942,
+      "gasolio": 2.107,
+      "gpl": 0.749,
+      "metano": 1.59
+    }
+  },
+  {
+    "date": "2026-07-22",
+    "averages": {
+      "benzina": 1.949,
+      "gasolio": 2.124,
+      "gpl": 0.75,
+      "metano": 1.591
+    }
+  },
+  {
+    "date": "2026-07-23",
+    "averages": {
+      "benzina": 1.957,
+      "gasolio": 2.141,
+      "gpl": 0.75,
+      "metano": 1.591
+    }
+  },
+  {
+    "date": "2026-07-26",
+    "averages": {
+      "benzina": 1.981,
+      "gasolio": 2.184,
+      "gpl": 0.751,
+      "metano": 1.592
+    }
+  },
+  {
+    "date": "2026-07-27",
+    "averages": {
+      "benzina": 1.982,
+      "gasolio": 2.185,
+      "gpl": 0.751,
+      "metano": 1.592
+    }
+  },
+  {
+    "date": "2026-07-29",
+    "averages": {
+      "benzina": 1.986,
+      "gasolio": 2.074,
+      "gpl": 0.751,
+      "metano": 1.592
+    }
+  },
+  {
+    "date": "2026-07-30",
+    "averages": {
+      "benzina": 1.9914,
+      "gasolio": 2.0802,
+      "diesel_plus": 2.1733,
+      "gpl": 0.751,
+      "metano": 1.5919,
+      "benzina_plus": 2.1377
+    }
+  }
+]
