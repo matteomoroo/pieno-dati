@@ -1,0 +1,22 @@
+{
+  "extraction": "2026-07-30",
+  "updatedAt": "2026-08-01T09:14:08.816Z",
+  "total": 21597,
+  "counts": {
+    "benzina": 21131,
+    "gasolio": 21127,
+    "diesel_plus": 4864,
+    "gpl": 4577,
+    "metano": 1602,
+    "benzina_plus": 446
+  },
+  "averages": {
+    "benzina": 1.9914,
+    "gasolio": 2.0802,
+    "diesel_plus": 2.1733,
+    "gpl": 0.751,
+    "metano": 1.5919,
+    "benzina_plus": 2.1377
+  },
+  "source": "MIMIT — Osservaprezzi Carburanti (IODL 2.0)"
+}

@@ -1,0 +1,10 @@
+{
+  "name": "pieno-dati",
+  "version": "1.0.0",
+  "description": "Ingest giornaliero degli open data MIMIT sui prezzi carburante. Genera stations.json e meta.json serviti da GitHub Pages.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  }
+}
