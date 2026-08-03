@@ -1,0 +1,23 @@
+[
+  {
+    "date": "2026-08-02",
+    "self": {
+      "benzina": 2.0014,
+      "gasolio": 2.1017,
+      "gpl": 0.7554,
+      "metano": 1.5347,
+      "benzina_plus": 2.1426,
+      "diesel_plus": 2.2165,
+      "hvo": 2.0679
+    },
+    "served": {
+      "benzina": 2.1352,
+      "gasolio": 2.2386,
+      "gpl": 0.7508,
+      "metano": 1.6038,
+      "benzina_plus": 2.2551,
+      "diesel_plus": 2.402,
+      "hvo": 2.2323
+    }
+  }
+]
