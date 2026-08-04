@@ -1,14 +1,14 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-03T23:15:31.857Z",
+  "generatedAt": "2026-08-03T23:24:05.286Z",
   "sourceExtractionDate": "2026-08-02",
   "freshness": {
     "sourceExtractionDate": "2026-08-02",
-    "generatedAt": "2026-08-03T23:15:31.857Z",
+    "generatedAt": "2026-08-03T23:24:05.286Z",
     "ageDays": 1,
     "status": "fresh"
   },
-  "total": 21633,
+  "total": 21634,
   "counts": {
     "benzina": {
       "self": 20254,
@@ -17,6 +17,10 @@
     "gasolio": {
       "self": 20281,
       "served": 13884
+    },
+    "benzina_plus": {
+      "self": 1382,
+      "served": 1092
     },
     "diesel_plus": {
       "self": 5196,
@@ -33,10 +37,6 @@
     "metano": {
       "self": 126,
       "served": 1574
-    },
-    "benzina_plus": {
-      "self": 216,
-      "served": 139
     }
   },
   "stats": {
@@ -106,18 +106,18 @@
     },
     "benzina_plus": {
       "self": {
-        "count": 216,
-        "mean": 2.1426,
-        "median": 2.149,
-        "min": 1.699,
-        "max": 2.438
+        "count": 1382,
+        "mean": 2.1585,
+        "median": 2.154,
+        "min": 1.619,
+        "max": 2.599
       },
       "served": {
-        "count": 139,
-        "mean": 2.2551,
-        "median": 2.219,
+        "count": 1092,
+        "mean": 2.3362,
+        "median": 2.364,
         "min": 1.699,
-        "max": 2.629
+        "max": 2.899
       }
     },
     "diesel_plus": {
