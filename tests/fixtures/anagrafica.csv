@@ -1,0 +1,9 @@
+Estrazione del 2026-07-30 alle ore 08:00:00
+idImpianto|Gestore|Bandiera|Tipo Impianto|Nome Impianto|Indirizzo|Comune|Provincia|Latitudine|Longitudine
+10001|Eni SpA|Agip Eni|Stradale|Stazione Centro|Via Roma 1|MILANO|MI|45.46679|9.19035
+10002|Q8|Q8|Stradale|AG021|Via Imera|AGRIGENTO|AG|37.29823|13.58979
+10003|Rossi Srl|Distributore|Stradale|123|Via Verdi|TORINO|TO|45.07327|7.68069
+10004|Tamoil|Tamoil|Autostradale|Area Servizio Nord|A1 km 100|BOLOGNA|BO|44.49437|11.34172
+10005|Estero|Estero|Stradale|Fuori Italia|Somewhere|PARIGI|XX|48.85660|2.35220
+99999|Senza Prezzi|IP|Stradale|Stazione Muta|Via Nulla|ROMA|RM|41.89277|12.48367
+|Senza Id|Q8|Stradale|Orfana|Via Persa|NAPOLI|NA|40.83957|14.25085

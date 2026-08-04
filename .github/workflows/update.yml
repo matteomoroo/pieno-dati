@@ -1,42 +1,78 @@
 name: Aggiorna prezzi MIMIT
 
+# Trigger: solo pianificato + manuale. NON su push, per evitare loop col
+# commit automatico dello storico.
 on:
   schedule:
     - cron: '45 6 * * *'
   workflow_dispatch:
 
+# Permessi minimi necessari: scrivere il commit dello storico e pubblicare Pages.
 permissions:
-  contents: read
+  contents: write # per committare public/data/**
   pages: write
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: pieno-update
+  cancel-in-progress: false # non annullare a metà un commit dati
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
-      - name: Genera stations.json e meta.json
-        run: node scripts/build.mjs
+      - name: Installazione pulita
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit test
+        run: npm test
+
+      # Se il MIMIT è irraggiungibile, cambia formato, o produce troppe poche
+      # stazioni, la pipeline esce != 0 e il job fallisce QUI, PRIMA di
+      # committare o deployare: l'ultima versione valida resta intatta.
+      - name: Genera dataset (schema v2)
+        run: npm run build
+
+      - name: Commit dello storico e dei dati generati
+        run: |
+          git config user.name  "pieno-bot"
+          git config user.email "pieno-bot@users.noreply.github.com"
+          git add public/data
+          if git diff --cached --quiet; then
+            echo "Nessun cambiamento nei dati: niente commit."
+          else
+            git commit -m "dati: aggiornamento MIMIT $(date -u +%Y-%m-%d) [skip ci]"
+            git push
+          fi
 
       - name: Prepara l'artefatto Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: public
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy su GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
