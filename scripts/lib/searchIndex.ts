@@ -6,7 +6,7 @@
  * workflow. Nessun elenco hardcoded: comuni, province e coordinate derivano
  * dalle stazioni.
  */
-import type { Station } from '../src/types/pieno.ts';
+import type { Station } from '../../src/types/pieno.ts';
 
 export interface LocalityEntry {
   q: string;
