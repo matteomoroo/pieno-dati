@@ -1,0 +1,152 @@
+---
+/**
+ * Mini-mappa "su richiesta" per le pagine territoriali.
+ * Parte come immagine statica leggera (tile OSM). Al tocco/click si trasforma
+ * in una mappa MapLibre interattiva che mostra i distributori della zona.
+ * MapLibre (~800KB) viene caricato solo se l'utente decide di interagire, cosi
+ * la pagina resta veloce per chi guarda solo i prezzi.
+ */
+export interface Props {
+  lat: number;
+  lng: number;
+  label: string;
+  zoom?: number;
+  radiusKm?: number;
+}
+const { lat, lng, label, zoom = 12, radiusKm = 8 } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const dataUrl = base + '/data/stations.json';
+
+function tileXY(latDeg: number, lngDeg: number, z: number): { x: number; y: number } {
+  const latRad = (latDeg * Math.PI) / 180;
+  const n = 2 ** z;
+  return {
+    x: Math.floor(((lngDeg + 180) / 360) * n),
+    y: Math.floor(
+      ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n,
+    ),
+  };
+}
+const { x, y } = tileXY(lat, lng, zoom);
+const tileUrl = `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
+---
+
+<figure class="minimap">
+  <div
+    class="minimap-box"
+    data-data-url={dataUrl}
+    data-lat={lat}
+    data-lng={lng}
+    data-zoom={zoom}
+    data-radius={radiusKm}
+  >
+    <button class="minimap-static" type="button" aria-label={`Attiva la mappa interattiva: ${label}`}>
+      <img
+        src={tileUrl}
+        alt={label}
+        width="256"
+        height="256"
+        loading="lazy"
+        decoding="async"
+      />
+      <span class="minimap-pin" aria-hidden="true"></span>
+      <span class="minimap-cta">Tocca per esplorare la mappa</span>
+    </button>
+  </div>
+  <figcaption>{label} · © OpenStreetMap</figcaption>
+</figure>
+
+<style>
+  .minimap {
+    margin: 0 0 var(--space-4);
+  }
+  .minimap-box {
+    position: relative;
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    height: 220px;
+  }
+  .minimap-static {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    background: var(--surface-alt);
+    cursor: pointer;
+  }
+  .minimap-static img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .minimap-pin {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    border: 2px solid #fff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .minimap-cta {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--brand);
+    font-size: var(--fs-xs);
+    padding: 6px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .minimap-box.active {
+    height: 380px;
+  }
+  .minimap figcaption {
+    font-size: 10px;
+    color: var(--text-faint);
+    margin-top: 4px;
+  }
+</style>
+
+<script>
+  import { activateAreaMap } from '../../lib/map/areaMap.ts';
+
+  document.querySelectorAll('.minimap-box').forEach((box) => {
+    const el = box as HTMLElement;
+    const btn = el.querySelector('.minimap-static') as HTMLButtonElement | null;
+    if (!btn) return;
+    btn.addEventListener(
+      'click',
+      () => {
+        const mapEl = document.createElement('div');
+        mapEl.style.width = '100%';
+        mapEl.style.height = '100%';
+        el.innerHTML = '';
+        el.appendChild(mapEl);
+        el.classList.add('active');
+        activateAreaMap({
+          container: mapEl,
+          dataUrl: el.dataset.dataUrl as string,
+          lat: parseFloat(el.dataset.lat as string),
+          lng: parseFloat(el.dataset.lng as string),
+          zoom: parseInt(el.dataset.zoom as string, 10),
+          radiusKm: parseFloat(el.dataset.radius as string),
+        }).catch((err) => {
+          console.error('[pieno] errore mappa area:', err);
+          el.innerHTML =
+            '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:0.85rem;padding:1rem;text-align:center">Impossibile caricare la mappa interattiva.</div>';
+        });
+      },
+      { once: true },
+    );
+  });
+</script>

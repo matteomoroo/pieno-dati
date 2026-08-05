@@ -1,0 +1,146 @@
+/*
+ * Pieno — design token.
+ * Fonte di verità per colori, tipografia, spaziature. Derivati dal mockup
+ * approvato: identità "totem prezzi" delle stazioni di servizio.
+ *
+ * Regole d'uso dei colori:
+ *  - --brand-* : superfici forti e testo (blu-petrolio), colore del brand;
+ *  - --accent-* : verde carburante, SOLO per azioni positive e CTA;
+ *  - --price-good / --price-mid / --price-bad : i tre semafori, riservati
+ *    ESCLUSIVAMENTE alla classificazione dei prezzi. Mai decorativi.
+ */
+
+:root {
+  /* Superfici */
+  --bg: #f7f5f0; /* sabbia, fondo pagina — leggibile sotto il sole */
+  --surface: #ffffff; /* card e riquadri */
+  --surface-alt: #efece4; /* superficie leggermente marcata */
+
+  /* Brand — blu-petrolio */
+  --brand: #12303a;
+  --brand-soft: #2a4a54; /* bordi/divisori su fondo brand */
+  --brand-ink: #9db3b8; /* testo secondario su fondo brand */
+
+  /* Accento — verde carburante */
+  --accent: #1b9e5a;
+  --accent-hover: #17864c;
+  --accent-soft: #7bd8a4; /* badge/evidenze tenui */
+
+  /* Testo su fondo chiaro */
+  --text: #12303a;
+  --text-muted: #6b7b7f;
+  --text-faint: #8a8578;
+
+  /* Bordi */
+  --border: #d8d3c8;
+  --border-strong: #c8d0cb;
+
+  /* Semaforo prezzi — SOLO classificazione */
+  --price-good: #22c55e;
+  --price-good-ink: #ffffff;
+  --price-mid: #f6c34e;
+  --price-mid-ink: #3a2e0a;
+  --price-bad: #ef5350;
+  --price-bad-ink: #ffffff;
+
+  /* Stati dati (freschezza) */
+  --fresh: #1b9e5a;
+  --delayed: #d98a1b;
+  --stale: #c0492e;
+
+  /* Tipografia */
+  --font-display: 'Archivo', system-ui, sans-serif; /* titoli */
+  --font-body: 'Inter', system-ui, sans-serif; /* corpo */
+  --font-mono: 'Space Mono', ui-monospace, monospace; /* prezzi e numeri */
+
+  /* Scala tipografica */
+  --fs-hero: 1.375rem; /* 22px */
+  --fs-price: 2.125rem; /* 34px */
+  --fs-lg: 1.0625rem;
+  --fs-base: 0.9375rem;
+  --fs-sm: 0.8125rem;
+  --fs-xs: 0.6875rem;
+
+  /* Spaziature */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius: 10px;
+  --radius-lg: 12px;
+
+  /* Ombra discreta */
+  --shadow: 0 1px 3px rgba(18, 48, 58, 0.08);
+
+  /* Breakpoint (per riferimento nelle media query) */
+  --bp-tablet: 640px;
+  --bp-desktop: 1024px;
+}
+
+/* Reset essenziale, mobile-first */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}
+
+/* Focus visibile — requisito accessibilità (Milestone 9) */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Rispetta chi preferisce meno animazioni */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Utility per contenuto solo-screen-reader (alternativa testuale alla mappa) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

@@ -1,0 +1,246 @@
+---
+/**
+ * Pagina provinciale: /prezzi-carburante/[regione]/[provincia]
+ */
+import Base from '../../../layouts/Base.astro';
+import AreaStats from '../../../components/territory/AreaStats.astro';
+import MiniMap from '../../../components/territory/MiniMap.astro';
+import { getTerritory } from '../../../lib/geo/loadTerritory.ts';
+import { loadMeta, formatPrice } from '../../../lib/data/load.ts';
+import { breadcrumbLd } from '../../../lib/seo/breadcrumb.ts';
+
+export function getStaticPaths() {
+  const paths = [];
+  for (const region of getTerritory()) {
+    for (const prov of region.province) {
+      paths.push({
+        params: { regione: region.slug, provincia: prov.slug },
+        props: { region, prov },
+      });
+    }
+  }
+  return paths;
+}
+
+const { region, prov } = Astro.props;
+const meta = loadMeta();
+const national = meta?.stats;
+const base = import.meta.env.BASE_URL;
+
+const comuniByPrice = [...prov.comuni]
+  .filter((c) => c.stats.benzina?.self)
+  .sort((a, b) => a.stats.benzina!.self!.mean - b.stats.benzina!.self!.mean);
+
+const site = Astro.site?.href.replace(/\/$/, '') ?? '';
+const ld = breadcrumbLd([
+  { name: 'Home', url: `${site}${base}` },
+  { name: region.name, url: `${site}${base}/prezzi-carburante/${region.slug}` },
+  {
+    name: `${prov.fullName} (${prov.name})`,
+    url: `${site}${base}/prezzi-carburante/${region.slug}/${prov.slug}`,
+  },
+]);
+---
+
+<Base
+  title={`Prezzi carburante provincia di ${prov.fullName} (${prov.name}) | Pieno`}
+  description={`Prezzi medi di benzina, diesel, GPL e metano nella provincia di ${prov.fullName} (${prov.name}): ${prov.stationCount} distributori, dati ufficiali aggiornati.`}
+  canonicalPath={`/prezzi-carburante/${region.slug}/${prov.slug}`}
+  structuredData={ld}
+>
+  <nav class="breadcrumb" aria-label="Percorso">
+    <a href={base}>Home</a>
+    <span aria-hidden="true">›</span>
+    <a href={`${base}/prezzi-carburante/${region.slug}`}>{region.name}</a>
+    <span aria-hidden="true">›</span>
+    <span>{prov.fullName} ({prov.name})</span>
+  </nav>
+
+  <main class="territory">
+    <header class="territory-head">
+      <h1>Prezzi carburante nella provincia di {prov.fullName} ({prov.name})</h1>
+      <p class="territory-sub">
+        {region.name} · {prov.stationCount.toLocaleString('it-IT')} distributori
+      </p>
+    </header>
+
+    <MiniMap
+      lat={prov.lat}
+      lng={prov.lng}
+      label={`Distributori nella provincia di ${prov.fullName}`}
+      zoom={9}
+    />
+
+    {
+      comuniByPrice.length > 0 && (
+        <section>
+          <h2 class="section-title section-title-lead">Comuni più convenienti (benzina)</h2>
+          <ol class="rank rank-lead">
+            {comuniByPrice.slice(0, 5).map((c, i) => (
+              <li>
+                <span class="rank-pos">{i + 1}</span>
+                <a href={`${base}/prezzi-carburante/${region.slug}/${prov.slug}/${c.slug}`}>
+                  {c.name}
+                </a>
+                <span class="rank-price">
+                  {formatPrice(c.stats.benzina!.self!.mean)} €/L
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )
+    }
+
+    <section class="stats-compact">
+      <h2 class="section-title">Prezzi medi provinciali</h2>
+      <AreaStats stats={prov.stats} national={national} />
+    </section>
+
+    {
+      prov.comuni.length > 0 && (
+        <section>
+          <h2 class="section-title">Comuni con dati disponibili</h2>
+          <ul class="area-links">
+            {prov.comuni.map((c) => (
+              <li>
+                <a href={`${base}/prezzi-carburante/${region.slug}/${prov.slug}/${c.slug}`}>
+                  {c.name}
+                  <span class="area-links-count">{c.stationCount}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </main>
+</Base>
+
+<style>
+  .breadcrumb {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .breadcrumb a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .territory {
+    padding: 0 var(--space-4) var(--space-6);
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .territory-head h1 {
+    font-size: var(--fs-hero);
+    margin-bottom: 4px;
+  }
+  .territory-sub {
+    color: var(--text-muted);
+    font-size: var(--fs-sm);
+    margin: 0 0 var(--space-5);
+  }
+  .section-title {
+    font-size: var(--fs-lg);
+    margin: var(--space-5) 0 var(--space-3);
+  }
+  .rank {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .rank li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 6px;
+  }
+  .rank-pos {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--accent);
+    width: 20px;
+  }
+  .rank a {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 500;
+    flex: 1;
+  }
+  .rank-price {
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+  }
+  .area-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .area-links a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    text-decoration: none;
+    font-size: var(--fs-sm);
+  }
+  .area-links-count {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--text-faint);
+  }
+
+  /* Classifica in evidenza: righe più grandi e leggibili */
+  .section-title-lead {
+    font-size: 1.25rem;
+  }
+  .rank-lead li {
+    padding: 15px 18px;
+    gap: 14px;
+  }
+  .rank-lead .rank-pos {
+    font-size: 1.15rem;
+    width: 24px;
+  }
+  .rank-lead a {
+    font-size: var(--fs-lg);
+  }
+  .rank-lead .rank-price {
+    font-size: var(--fs-base);
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  /* Prezzi medi più compatti: card più piccole e in griglia più fitta */
+  .stats-compact :global(.area-stat-card) {
+    padding: 9px 12px;
+  }
+  .stats-compact :global(.area-stat-num) {
+    font-size: 1.25rem;
+  }
+  .stats-compact :global(.area-stats) {
+    gap: 6px;
+  }
+  @media (min-width: 480px) {
+    .stats-compact :global(.area-stats) {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+  }
+</style>

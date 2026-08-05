@@ -1,0 +1,454 @@
+---
+/**
+ * Homepage di Pieno.
+ * Legge i numeri reali da meta.json (build-time), mostra il totem prezzo,
+ * la barra di ricerca, il selettore carburante e la mappa interattiva.
+ * Distinta dalla mappa a schermo intero (/mappa): qui c'è anche contenuto
+ * testuale indicizzabile.
+ */
+import Base from '../layouts/Base.astro';
+import MapView from '../components/map/MapView.astro';
+import {
+  loadMeta,
+  formatPrice,
+  formatDate,
+  FUEL_DISPLAY_ORDER,
+  FUEL_UI_LABELS,
+} from '../lib/data/load.ts';
+import { getTerritory } from '../lib/geo/loadTerritory.ts';
+
+const meta = loadMeta();
+const benzina = meta?.stats?.benzina;
+const total = meta?.total ?? 0;
+const extractionDate = meta?.sourceExtractionDate
+  ? formatDate(meta.sourceExtractionDate)
+  : '';
+
+// Regioni per i link SEO nel footer (Google segue i link per scoprire le pagine).
+const regions = getTerritory();
+const baseUrl = import.meta.env.BASE_URL;
+---
+
+<Base
+  title="Pieno — Prezzi carburante in Italia, aggiornati ogni giorno"
+  description="Confronta i prezzi di benzina, diesel, GPL e metano dei distributori in Italia. Dati ufficiali del Ministero, aggiornati ogni mattina."
+>
+  <header class="hero">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">⛽</span>
+      <span class="brand-name">pieno</span>
+    </div>
+    <h1>Dove conviene fare il pieno oggi</h1>
+    <p class="tagline">
+      Prezzi ufficiali MIMIT di {total.toLocaleString('it-IT')} distributori in Italia.
+    </p>
+  </header>
+
+  <main class="container">
+    <form class="search" role="search" onsubmit="return false;">
+      <label class="sr-only" for="q">Cerca località</label>
+      <span class="search-icon" aria-hidden="true">⌕</span>
+      <input
+        id="q"
+        type="search"
+        placeholder="Cerca una città"
+        autocomplete="off"
+      />
+    </form>
+
+    <div class="fuels" role="tablist" aria-label="Scegli il carburante">
+      {
+        FUEL_DISPLAY_ORDER.map((fuel, i) => (
+          <button
+            class:list={['fuel-chip', { active: i === 0 }]}
+            role="tab"
+            aria-selected={i === 0 ? 'true' : 'false'}
+            data-fuel={fuel}
+          >
+            {FUEL_UI_LABELS[fuel]}
+          </button>
+        ))
+      }
+      <button id="filters-trigger" class="filters-trigger" type="button">
+        <span aria-hidden="true">⚙</span> Filtri
+        <span id="filters-badge" class="filters-trigger-badge" hidden>0</span>
+      </button>
+    </div>
+
+    <section class="totem" aria-label="Prezzo medio nazionale">
+      <div class="totem-label">Media nazionale benzina · self</div>
+      <div class="totem-row">
+        <div class="totem-main">
+          <span class="totem-price">{formatPrice(benzina?.self?.mean)}</span>
+          <span class="totem-unit">€/L</span>
+        </div>
+        {
+          benzina?.served && (
+            <div class="totem-served">
+              <span class="totem-served-label">servito</span>
+              <span class="totem-served-price">
+                {formatPrice(benzina.served.mean)}
+              </span>
+            </div>
+          )
+        }
+      </div>
+    </section>
+
+    <MapView initialFuel="benzina" />
+
+    <div class="home-tools">
+      <a class="home-tool" href={`${baseUrl}/calcola-risparmio`}>
+        <span class="home-tool-icon" aria-hidden="true">⛽</span>
+        <span class="home-tool-text">
+          <strong>Dove conviene fare rifornimento</strong>
+          <small>Scopri se vale la pena andare più lontano</small>
+        </span>
+        <span class="home-tool-arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="home-tool" href={`${baseUrl}/andamento-prezzi`}>
+        <span class="home-tool-icon" aria-hidden="true">📈</span>
+        <span class="home-tool-text">
+          <strong>Andamento dei prezzi</strong>
+          <small>Come cambiano benzina, diesel e gli altri</small>
+        </span>
+        <span class="home-tool-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <!-- Alternativa testuale alla mappa (accessibilità, Milestone 9) -->
+    <p class="sr-only">
+      La mappa mostra i distributori con i relativi prezzi. In alternativa,
+      usa la ricerca per località per vedere l'elenco dei distributori.
+    </p>
+  </main>
+
+  <footer class="site-footer">
+    <nav class="region-links" aria-label="Prezzi per regione">
+      <h2 class="region-links-title">Prezzi carburante per regione</h2>
+      <ul>
+        {
+          regions.map((r) => (
+            <li>
+              <a href={`${baseUrl}/prezzi-carburante/${r.slug}`}>{r.name}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <p class="source-note">
+      Fonte: Ministero delle Imprese e del Made in Italy (Osservaprezzi
+      Carburanti). Aggiorniamo ogni mattina dalla rilevazione ministeriale; il
+      prezzo di ciascun distributore risale all'ultima comunicazione del
+      gestore.{extractionDate && ` Ultimo dato: ${extractionDate}.`}
+    </p>
+  </footer>
+</Base>
+
+<style>
+  .hero {
+    background: var(--brand);
+    padding: var(--space-5) var(--space-5) var(--space-6);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+  }
+  .brand-mark {
+    font-size: 20px;
+  }
+  .brand-name {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: var(--fs-lg);
+    color: var(--bg);
+    letter-spacing: -0.5px;
+  }
+  .hero h1 {
+    font-size: var(--fs-hero);
+    color: var(--bg);
+    margin-bottom: var(--space-1);
+  }
+  .tagline {
+    font-size: var(--fs-sm);
+    color: var(--brand-ink);
+    margin: 0;
+  }
+
+  .container {
+    padding: var(--space-4) var(--space-4) 0;
+  }
+  .home-tools {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: var(--space-4) 0;
+  }
+  .home-tool {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color 0.15s;
+  }
+  .home-tool:hover {
+    border-color: var(--accent);
+  }
+  .home-tool-icon {
+    font-size: 24px;
+    flex: 0 0 auto;
+  }
+  .home-tool-text {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .home-tool-text strong {
+    font-size: var(--fs-base);
+    font-weight: 600;
+  }
+  .home-tool-text small {
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+  }
+  .home-tool-arrow {
+    color: var(--accent);
+    font-size: 18px;
+    flex: 0 0 auto;
+  }
+
+  .search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--space-2);
+  }
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    color: var(--text-muted);
+    font-size: 18px;
+  }
+  .search input {
+    width: 100%;
+    padding: 11px 12px 11px 36px;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    font-family: var(--font-body);
+    font-size: var(--fs-base);
+  }
+
+  .fuels {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    margin-bottom: var(--space-4);
+    scrollbar-width: none;
+  }
+  .fuels::-webkit-scrollbar {
+    display: none;
+  }
+  .fuel-chip {
+    flex: 0 0 auto;
+    padding: 6px 13px;
+    border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: var(--fs-sm);
+    cursor: pointer;
+  }
+  .fuel-chip.active {
+    background: var(--brand);
+    color: var(--bg);
+    border-color: var(--brand);
+    font-weight: 500;
+  }
+
+  .totem {
+    background: var(--brand);
+    border-radius: var(--radius-lg);
+    padding: 14px 18px;
+    margin-bottom: var(--space-4);
+  }
+  .totem-label {
+    font-size: var(--fs-xs);
+    color: var(--brand-ink);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .totem-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-top: 5px;
+  }
+  .totem-main {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+  }
+  .totem-price {
+    font-family: var(--font-mono);
+    font-size: var(--fs-price);
+    font-weight: 700;
+    color: var(--bg);
+    letter-spacing: -1px;
+  }
+  .totem-unit {
+    font-size: var(--fs-sm);
+    color: var(--brand-ink);
+  }
+  .totem-served {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    padding-left: 10px;
+    border-left: 0.5px solid var(--brand-soft);
+  }
+  .totem-served-label {
+    font-size: var(--fs-xs);
+    color: var(--brand-ink);
+  }
+  .totem-served-price {
+    font-family: var(--font-mono);
+    font-size: var(--fs-lg);
+    color: var(--bg);
+  }
+
+  .site-footer {
+    padding: var(--space-5) var(--space-4) var(--space-6);
+  }
+  .region-links {
+    margin-bottom: var(--space-5);
+  }
+  .region-links-title {
+    font-size: var(--fs-base);
+    font-weight: 600;
+    margin-bottom: var(--space-3);
+    color: var(--text);
+  }
+  .region-links ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .region-links a {
+    display: block;
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    text-decoration: none;
+    font-size: var(--fs-sm);
+  }
+  .region-links a:hover {
+    background: var(--surface-alt);
+  }
+  @media (min-width: 640px) {
+    .region-links ul {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+  }
+  .source-note {
+    font-size: 10px;
+    line-height: 1.55;
+    color: var(--text-faint);
+    margin: 0;
+  }
+  .footer-tools {
+    margin: 0 0 var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .footer-tools a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: var(--fs-sm);
+    font-weight: 500;
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .hero {
+      text-align: center;
+    }
+    .brand {
+      justify-content: center;
+    }
+  }
+</style>
+
+<script>
+  import { initSearch } from '../lib/search/client.ts';
+  import { initFilters } from '../lib/filters/client.ts';
+  import { FUEL_UI_LABELS } from '../lib/data/fuels-ui.ts';
+  import type { Station, FuelKey } from '../types/pieno.ts';
+
+  // Carburante corrente (letto dai chip).
+  function currentFuel(): FuelKey {
+    const active = document.querySelector('.fuel-chip.active');
+    return (active?.getAttribute('data-fuel') ?? 'benzina') as FuelKey;
+  }
+
+  // Cambio carburante: aggiorna i chip e notifica la mappa.
+  const chips = document.querySelectorAll('.fuel-chip');
+  chips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      chips.forEach((c) => {
+        c.classList.remove('active');
+        c.setAttribute('aria-selected', 'false');
+      });
+      chip.classList.add('active');
+      chip.setAttribute('aria-selected', 'true');
+      const fuel = chip.getAttribute('data-fuel');
+      const w = window as unknown as { __pienoSetFuel?: (f: FuelKey) => void };
+      if (w.__pienoSetFuel && fuel) w.__pienoSetFuel(fuel as FuelKey);
+    });
+  });
+
+  // Ricerca città + filtri: collega alla mappa quando è pronta.
+  const w = window as unknown as {
+    __pienoFlyTo?: (lat: number, lng: number, zoom: number) => void;
+    __pienoGetStations?: () => Station[];
+    __pienoApplyFilter?: (pred: (s: Station) => boolean) => void;
+  };
+  const base = document.querySelector<HTMLElement>('.map-wrap')?.dataset.dataUrl ?? '';
+  const indexUrl = base.replace('stations.json', 'search-index.json');
+
+  function tryInit(attempts = 0): void {
+    if (w.__pienoFlyTo && w.__pienoGetStations && w.__pienoApplyFilter) {
+      initSearch({
+        flyTo: (lat, lng, zoom) => w.__pienoFlyTo!(lat, lng, zoom),
+        indexUrl,
+      });
+      initFilters({
+        getStations: () => w.__pienoGetStations!(),
+        applyFilter: (pred) => w.__pienoApplyFilter!(pred),
+        getFuel: currentFuel,
+        fuelLabel: (f) => FUEL_UI_LABELS[f],
+      });
+    } else if (attempts < 50) {
+      setTimeout(() => tryInit(attempts + 1), 100);
+    }
+  }
+  tryInit();
+</script>

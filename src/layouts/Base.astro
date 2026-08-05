@@ -1,0 +1,86 @@
+---
+/**
+ * Layout base di Pieno.
+ * Gestisce <head>, SEO, font, e wrappa il contenuto di ogni pagina.
+ */
+import '../styles/tokens.css';
+
+export interface Props {
+  title: string;
+  description: string;
+  /** Path canonico relativo (es. "/mappa"). Default: home. */
+  canonicalPath?: string;
+  /** Dati strutturati JSON-LD (oggetto o array), inseriti nel <head>. */
+  structuredData?: object | object[];
+}
+
+const {
+  title,
+  description,
+  canonicalPath = '',
+  structuredData,
+} = Astro.props;
+const canonical = new URL(
+  import.meta.env.BASE_URL + canonicalPath,
+  Astro.site,
+).href;
+---
+
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <!-- Open Graph / social -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content="it_IT" />
+    <meta name="twitter:card" content="summary" />
+
+    <!-- Font: Archivo (titoli), Inter (corpo), Space Mono (prezzi).
+         preconnect accelera il caricamento. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600&family=Inter:wght@400;500&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <meta name="theme-color" content="#12303a" />
+
+    <!-- PWA -->
+    <link rel="manifest" href={import.meta.env.BASE_URL + '/manifest.webmanifest'} />
+    <link
+      rel="apple-touch-icon"
+      href={import.meta.env.BASE_URL + '/icons/apple-touch-icon.png'}
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Pieno" />
+    {
+      structuredData && (
+        <script
+          type="application/ld+json"
+          set:html={JSON.stringify(structuredData)}
+        />
+      )
+    }
+  </head>
+  <body>
+    <slot />
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker
+            .register(import.meta.env.BASE_URL + '/sw.js')
+            .catch(() => {});
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,165 @@
+---
+/**
+ * Andamento prezzi: /andamento-prezzi
+ * Grafici storici delle medie nazionali self per carburante, da history.json.
+ * Nota: lo storico cresce di un giorno a ogni run del workflow; finché non si
+ * accumulano abbastanza giorni, i grafici mostrano pochi punti.
+ */
+import Base from '../layouts/Base.astro';
+import { lineChartSvg, type SeriesPoint } from '../lib/chart/lineChart.ts';
+import { FUEL_DISPLAY_ORDER, FUEL_UI_LABELS } from '../lib/data/fuels-ui.ts';
+import { loadMeta } from '../lib/data/load.ts';
+import type { FuelKey, HistoryPoint } from '../types/pieno.ts';
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+const base = import.meta.env.BASE_URL;
+
+// Carica lo storico.
+function loadHistory(): HistoryPoint[] {
+  const p = join(process.cwd(), 'public', 'data', 'history.json');
+  if (!existsSync(p)) return [];
+  try {
+    return JSON.parse(readFileSync(p, 'utf8')) as HistoryPoint[];
+  } catch {
+    return [];
+  }
+}
+const history = loadHistory();
+const meta = loadMeta();
+
+// Per ogni carburante, costruisci la serie storica self.
+function seriesFor(fuel: FuelKey): SeriesPoint[] {
+  return history
+    .map((h) => ({ date: h.date.slice(5), value: h.self[fuel] }))
+    .filter((p): p is SeriesPoint => p.value != null);
+}
+
+const charts = FUEL_DISPLAY_ORDER.map((fuel: FuelKey) => ({
+  fuel,
+  series: seriesFor(fuel),
+  latest: meta?.stats?.[fuel]?.self?.mean ?? null,
+  trend: meta?.trends?.[fuel] ?? null,
+})).filter((c) => c.series.length > 0 || c.latest != null);
+
+const daysAvailable = history.length;
+---
+
+<Base
+  title="Andamento prezzi carburante in Italia | Pieno"
+  description="Come sono cambiati i prezzi medi di benzina, diesel, GPL e metano in Italia nel tempo. Dati ufficiali del Ministero, aggiornati ogni giorno."
+  canonicalPath="/andamento-prezzi"
+>
+  <header class="trend-head">
+    <a class="trend-back" href={base}>‹ Pieno</a>
+    <h1>Andamento dei prezzi</h1>
+    <p>
+      Come cambiano i prezzi medi nazionali (self) nel tempo.
+      {
+        daysAvailable < 7 && (
+          <span class="trend-notice">
+            Stiamo raccogliendo lo storico: al momento sono disponibili
+            {' '}{daysAvailable} {daysAvailable === 1 ? 'giorno' : 'giorni'} di
+            dati. I grafici diventeranno più ricchi col passare dei giorni.
+          </span>
+        )
+      }
+    </p>
+  </header>
+
+  <main class="trend">
+    {
+      charts.map((c) => (
+        <section class="trend-card">
+          <div class="trend-card-head">
+            <h2>{FUEL_UI_LABELS[c.fuel]}</h2>
+            {c.latest != null && (
+              <span class="trend-latest">
+                {c.latest.toLocaleString('it-IT', {
+                  minimumFractionDigits: 3,
+                  maximumFractionDigits: 3,
+                })} €/L
+              </span>
+            )}
+          </div>
+          {c.trend && (
+            <p class="trend-delta">
+              {c.trend.direction === 'up'
+                ? `In aumento: +${c.trend.deltaCents.toFixed(1)}¢ negli ultimi ${c.trend.daysBack} giorni`
+                : c.trend.direction === 'down'
+                  ? `In calo: ${c.trend.deltaCents.toFixed(1)}¢ negli ultimi ${c.trend.daysBack} giorni`
+                  : 'Sostanzialmente stabile nell\u2019ultima settimana'}
+            </p>
+          )}
+          <div class="trend-chart" set:html={lineChartSvg(c.series)} />
+        </section>
+      ))
+    }
+  </main>
+</Base>
+
+<style>
+  .trend-head {
+    background: var(--brand);
+    color: var(--bg);
+    padding: var(--space-4) var(--space-4) var(--space-5);
+  }
+  .trend-back {
+    color: var(--brand-ink);
+    text-decoration: none;
+    font-size: var(--fs-sm);
+  }
+  .trend-head h1 {
+    font-size: var(--fs-hero);
+    margin: var(--space-2) 0;
+  }
+  .trend-head p {
+    color: var(--brand-ink);
+    font-size: var(--fs-sm);
+    margin: 0;
+    max-width: 620px;
+  }
+  .trend-notice {
+    display: block;
+    margin-top: var(--space-2);
+    color: var(--accent-soft);
+  }
+  .trend {
+    padding: var(--space-4);
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  .trend-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    margin-bottom: var(--space-4);
+  }
+  .trend-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .trend-card-head h2 {
+    font-size: var(--fs-lg);
+  }
+  .trend-latest {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--text);
+  }
+  .trend-delta {
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+    margin: 4px 0 var(--space-3);
+  }
+  .trend-chart {
+    width: 100%;
+  }
+  .trend-chart :global(svg) {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+</style>

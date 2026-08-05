@@ -1,0 +1,192 @@
+---
+/**
+ * Pagina comunale: /prezzi-carburante/[regione]/[provincia]/[comune]
+ * La più specifica: statistiche del comune, distributori più economici per
+ * carburante, mini-mappa. Generata solo per comuni con >= 5 distributori
+ * (garantito da buildTerritory).
+ */
+import Base from '../../../../layouts/Base.astro';
+import AreaStats from '../../../../components/territory/AreaStats.astro';
+import MiniMap from '../../../../components/territory/MiniMap.astro';
+import { getTerritory } from '../../../../lib/geo/loadTerritory.ts';
+import { loadMeta, formatPrice, FUEL_UI_LABELS } from '../../../../lib/data/load.ts';
+import { FUEL_DISPLAY_ORDER } from '../../../../lib/data/fuels-ui.ts';
+import { breadcrumbLd } from '../../../../lib/seo/breadcrumb.ts';
+import type { FuelKey } from '../../../../types/pieno.ts';
+
+export function getStaticPaths() {
+  const paths = [];
+  for (const region of getTerritory()) {
+    for (const prov of region.province) {
+      for (const comune of prov.comuni) {
+        paths.push({
+          params: {
+            regione: region.slug,
+            provincia: prov.slug,
+            comune: comune.slug,
+          },
+          props: { region, prov, comune },
+        });
+      }
+    }
+  }
+  return paths;
+}
+
+const { region, prov, comune } = Astro.props;
+const meta = loadMeta();
+const national = meta?.stats;
+const base = import.meta.env.BASE_URL;
+
+const cheapestList = FUEL_DISPLAY_ORDER.filter(
+  (f: FuelKey) => comune.cheapest[f],
+).map((f: FuelKey) => ({ fuel: f, ...comune.cheapest[f]! }));
+
+const site = Astro.site?.href.replace(/\/$/, '') ?? '';
+const ld = breadcrumbLd([
+  { name: 'Home', url: `${site}${base}` },
+  { name: region.name, url: `${site}${base}/prezzi-carburante/${region.slug}` },
+  {
+    name: `${prov.fullName} (${prov.name})`,
+    url: `${site}${base}/prezzi-carburante/${region.slug}/${prov.slug}`,
+  },
+  {
+    name: comune.name,
+    url: `${site}${base}/prezzi-carburante/${region.slug}/${prov.slug}/${comune.slug}`,
+  },
+]);
+---
+
+<Base
+  title={`Prezzi carburante ${comune.name} (${prov.name}) — distributori più economici | Pieno`}
+  description={`I prezzi di benzina, diesel, GPL e metano a ${comune.name}: ${comune.stationCount} distributori, dove conviene fare rifornimento. Dati ufficiali aggiornati.`}
+  canonicalPath={`/prezzi-carburante/${region.slug}/${prov.slug}/${comune.slug}`}
+  structuredData={ld}
+>
+  <nav class="breadcrumb" aria-label="Percorso">
+    <a href={base}>Home</a>
+    <span aria-hidden="true">›</span>
+    <a href={`${base}/prezzi-carburante/${region.slug}`}>{region.name}</a>
+    <span aria-hidden="true">›</span>
+    <a href={`${base}/prezzi-carburante/${region.slug}/${prov.slug}`}>{prov.fullName} ({prov.name})</a>
+    <span aria-hidden="true">›</span>
+    <span>{comune.name}</span>
+  </nav>
+
+  <main class="territory">
+    <header class="territory-head">
+      <h1>Prezzi carburante a {comune.name}</h1>
+      <p class="territory-sub">
+        {prov.fullName} ({prov.name}), {region.name} ·
+        {comune.stationCount.toLocaleString('it-IT')} distributori
+      </p>
+    </header>
+
+    <MiniMap
+      lat={comune.lat}
+      lng={comune.lng}
+      label={`Distributori a ${comune.name}`}
+    />
+
+    <section>
+      <h2 class="section-title">Prezzi medi a {comune.name}</h2>
+      <AreaStats stats={comune.stats} national={national} />
+    </section>
+
+    {
+      cheapestList.length > 0 && (
+        <section>
+          <h2 class="section-title">Distributori più economici</h2>
+          <ul class="cheapest">
+            {cheapestList.map((c) => (
+              <li>
+                <span class="cheapest-fuel">{FUEL_UI_LABELS[c.fuel]}</span>
+                <span class="cheapest-name">
+                  {c.brand} · {c.name}
+                </span>
+                <span class="cheapest-price">{formatPrice(c.price)} €/L</span>
+              </li>
+            ))}
+          </ul>
+          <p class="cheapest-note">
+            Prezzo più basso comunicato per ciascun carburante a {comune.name}.
+          </p>
+        </section>
+      )
+    }
+  </main>
+</Base>
+
+<style>
+  .breadcrumb {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .breadcrumb a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .territory {
+    padding: 0 var(--space-4) var(--space-6);
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .territory-head h1 {
+    font-size: var(--fs-hero);
+    margin-bottom: 4px;
+  }
+  .territory-sub {
+    color: var(--text-muted);
+    font-size: var(--fs-sm);
+    margin: 0 0 var(--space-4);
+  }
+  .section-title {
+    font-size: var(--fs-lg);
+    margin: var(--space-5) 0 var(--space-3);
+  }
+  .cheapest {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .cheapest li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 6px;
+  }
+  .cheapest-fuel {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--brand);
+    background: var(--surface-alt);
+    padding: 3px 8px;
+    border-radius: 6px;
+    min-width: 68px;
+    text-align: center;
+  }
+  .cheapest-name {
+    flex: 1;
+    font-size: var(--fs-sm);
+    color: var(--text);
+  }
+  .cheapest-price {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .cheapest-note {
+    font-size: var(--fs-xs);
+    color: var(--text-faint);
+    margin-top: 8px;
+  }
+</style>

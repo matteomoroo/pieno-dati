@@ -1,0 +1,192 @@
+---
+/**
+ * Pagina regionale: /prezzi-carburante/[regione]
+ * Prezzo medio/mediano regionale per carburante, province più convenienti,
+ * link alle province. Generata staticamente per ogni regione.
+ */
+import Base from '../../layouts/Base.astro';
+import AreaStats from '../../components/territory/AreaStats.astro';
+import { getTerritory } from '../../lib/geo/loadTerritory.ts';
+import { loadMeta, formatPrice } from '../../lib/data/load.ts';
+import { toSlug } from '../../lib/geo/regions.ts';
+import { breadcrumbLd } from '../../lib/seo/breadcrumb.ts';
+
+export function getStaticPaths() {
+  return getTerritory().map((region) => ({
+    params: { regione: region.slug },
+    props: { region },
+  }));
+}
+
+const { region } = Astro.props;
+const meta = loadMeta();
+const national = meta?.stats;
+
+// Province ordinate per prezzo benzina self (più convenienti prima)
+const provincesByPrice = [...region.province]
+  .filter((p) => p.stats.benzina?.self)
+  .sort((a, b) => (a.stats.benzina!.self!.mean - b.stats.benzina!.self!.mean));
+
+const base = import.meta.env.BASE_URL;
+const site = Astro.site?.href.replace(/\/$/, '') ?? '';
+const ld = breadcrumbLd([
+  { name: 'Home', url: `${site}${base}` },
+  { name: region.name, url: `${site}${base}/prezzi-carburante/${region.slug}` },
+]);
+---
+
+<Base
+  title={`Prezzi carburante ${region.name} — medie e distributori | Pieno`}
+  description={`Prezzi medi di benzina, diesel, GPL e metano in ${region.name}: ${region.stationCount} distributori, medie aggiornate dai dati ufficiali del Ministero.`}
+  canonicalPath={`/prezzi-carburante/${region.slug}`}
+  structuredData={ld}
+>
+  <nav class="breadcrumb" aria-label="Percorso">
+    <a href={base}>Home</a>
+    <span aria-hidden="true">›</span>
+    <span>{region.name}</span>
+  </nav>
+
+  <main class="territory">
+    <header class="territory-head">
+      <h1>Prezzi carburante in {region.name}</h1>
+      <p class="territory-sub">
+        {region.stationCount.toLocaleString('it-IT')} distributori ·
+        {region.province.length} province
+      </p>
+    </header>
+
+    <section aria-label="Prezzi medi regionali">
+      <h2 class="section-title">Prezzi medi in {region.name}</h2>
+      <AreaStats stats={region.stats} national={national} />
+    </section>
+
+    {
+      provincesByPrice.length > 0 && (
+        <section aria-label="Province più convenienti">
+          <h2 class="section-title">Province più convenienti (benzina)</h2>
+          <ol class="rank">
+            {provincesByPrice.slice(0, 5).map((p, i) => (
+              <li>
+                <span class="rank-pos">{i + 1}</span>
+                <a href={`${base}/prezzi-carburante/${region.slug}/${p.slug}`}>
+                  {p.fullName} ({p.name})
+                </a>
+                <span class="rank-price">
+                  {formatPrice(p.stats.benzina!.self!.mean)} €/L
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )
+    }
+
+    <section aria-label="Tutte le province">
+      <h2 class="section-title">Tutte le province</h2>
+      <ul class="area-links">
+        {
+          region.province.map((p) => (
+            <li>
+              <a href={`${base}/prezzi-carburante/${region.slug}/${p.slug}`}>
+                {p.fullName} ({p.name})
+                <span class="area-links-count">{p.stationCount}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </main>
+</Base>
+
+<style>
+  .breadcrumb {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .breadcrumb a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .territory {
+    padding: 0 var(--space-4) var(--space-6);
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .territory-head h1 {
+    font-size: var(--fs-hero);
+    margin-bottom: 4px;
+  }
+  .territory-sub {
+    color: var(--text-muted);
+    font-size: var(--fs-sm);
+    margin: 0 0 var(--space-5);
+  }
+  .section-title {
+    font-size: var(--fs-lg);
+    margin: var(--space-5) 0 var(--space-3);
+  }
+  .rank {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .rank li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 6px;
+  }
+  .rank-pos {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--accent);
+    width: 20px;
+  }
+  .rank a {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 500;
+    flex: 1;
+  }
+  .rank-price {
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+  }
+  .area-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .area-links a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    text-decoration: none;
+    font-size: var(--fs-sm);
+  }
+  .area-links-count {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--text-faint);
+  }
+</style>

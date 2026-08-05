@@ -1,0 +1,111 @@
+---
+/**
+ * Mostra le statistiche prezzo di un'area (regione/provincia/comune) per ogni
+ * carburante disponibile: media e mediana self, con servito se presente.
+ */
+import type { AreaStats } from '../../lib/geo/territory.ts';
+import type { FuelKey } from '../../types/pieno.ts';
+import { FUEL_DISPLAY_ORDER, FUEL_UI_LABELS } from '../../lib/data/fuels-ui.ts';
+import { formatPrice } from '../../lib/data/load.ts';
+
+export interface Props {
+  stats: AreaStats;
+  /** Statistiche nazionali per il confronto (opzionale). */
+  national?: AreaStats;
+}
+const { stats, national } = Astro.props;
+
+function delta(area?: number, nat?: number): string | null {
+  if (area == null || nat == null) return null;
+  const cents = Math.round((area - nat) * 100);
+  if (cents === 0) return 'in linea con la media nazionale';
+  const abs = Math.abs(cents);
+  return cents < 0
+    ? `${abs}¢ sotto la media nazionale`
+    : `${abs}¢ sopra la media nazionale`;
+}
+---
+
+<div class="area-stats">
+  {
+    FUEL_DISPLAY_ORDER.filter((f: FuelKey) => stats[f]?.self || stats[f]?.served).map(
+      (fuel: FuelKey) => {
+        const s = stats[fuel];
+        const nat = national?.[fuel]?.self?.mean;
+        const cmp = delta(s?.self?.mean, nat);
+        return (
+          <div class="area-stat-card">
+            <div class="area-stat-fuel">{FUEL_UI_LABELS[fuel]}</div>
+            <div class="area-stat-price">
+              <span class="area-stat-num">{formatPrice(s?.self?.mean)}</span>
+              <span class="area-stat-unit">€/L</span>
+              <span class="area-stat-mode">self</span>
+            </div>
+            <div class="area-stat-detail">
+              mediana {formatPrice(s?.self?.median)}
+              {s?.served && <> · servito {formatPrice(s.served.mean)}</>}
+            </div>
+            {cmp && <div class="area-stat-cmp">{cmp}</div>}
+          </div>
+        );
+      },
+    )
+  }
+</div>
+
+<style>
+  .area-stats {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .area-stat-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
+  }
+  .area-stat-fuel {
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .area-stat-price {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .area-stat-num {
+    font-family: var(--font-mono);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .area-stat-unit {
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+  }
+  .area-stat-mode {
+    font-size: var(--fs-xs);
+    color: var(--text-faint);
+    margin-left: auto;
+  }
+  .area-stat-detail {
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .area-stat-cmp {
+    font-size: var(--fs-sm);
+    color: var(--accent);
+    margin-top: 6px;
+    font-weight: 500;
+  }
+  @media (min-width: 640px) {
+    .area-stats {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

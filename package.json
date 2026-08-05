@@ -12,11 +12,19 @@
     "build:legacy": "node scripts/build.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "dev": "astro dev",
+    "astro:build": "astro build",
+    "preview": "astro preview"
   },
   "devDependencies": {
+    "@astrojs/sitemap": "^3.7.3",
     "@types/node": "^22.20.1",
     "typescript": "^5.6.3",
     "vitest": "^2.1.4"
+  },
+  "dependencies": {
+    "astro": "^4.16.19",
+    "maplibre-gl": "^4.7.1"
   }
 }

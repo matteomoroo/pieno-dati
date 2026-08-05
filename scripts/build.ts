@@ -47,6 +47,7 @@ import {
 import { buildNews } from './lib/news.ts';
 import { computeFreshness } from './lib/freshness.ts';
 import { isValidExtractionDate } from './lib/validate.ts';
+import { buildSearchIndex } from './lib/searchIndex.ts';
 
 const ANAGRAFICA_URL =
   'https://www.mimit.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv';
@@ -214,6 +215,13 @@ async function main(): Promise<void> {
   writeFileSync(
     join(REPORTS_DIR, 'latest.json'),
     JSON.stringify(report, null, 2),
+  );
+
+  // Indice di ricerca delle località (comuni), derivato dalle stazioni.
+  const searchIndex = buildSearchIndex(stations);
+  writeFileSync(
+    join(DATA_DIR, 'search-index.json'),
+    JSON.stringify(searchIndex),
   );
 
   // --- log riepilogo ---

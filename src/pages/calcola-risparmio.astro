@@ -1,0 +1,220 @@
+---
+/**
+ * Calcolatore "dove conviene fare rifornimento": /calcola-risparmio
+ * Input minimo (solo carburante + posizione al tocco). Litri e consumo hanno
+ * default modificabili. Mostra dove conviene andare tenendo conto del costo
+ * della deviazione.
+ */
+import Base from '../layouts/Base.astro';
+import { FUEL_DISPLAY_ORDER, FUEL_UI_LABELS } from '../lib/data/fuels-ui.ts';
+import { DEFAULTS } from '../lib/savings/compute.ts';
+import type { FuelKey } from '../types/pieno.ts';
+
+const base = import.meta.env.BASE_URL;
+---
+
+<Base
+  title="Dove conviene fare rifornimento — calcolatore | Pieno"
+  description="Scopri se conviene andare a un distributore più lontano ma più economico: Pieno calcola il risparmio tenendo conto del carburante speso per arrivarci."
+  canonicalPath="/calcola-risparmio"
+>
+  <header class="calc-head">
+    <a class="calc-back" href={base}>‹ Pieno</a>
+    <h1>Dove conviene fare rifornimento</h1>
+    <p>
+      A volte un distributore più lontano ma più economico fa risparmiare, altre
+      volte il viaggio si mangia il risparmio. Scegli il carburante e attiva la
+      posizione: Pieno fa il conto per te.
+    </p>
+  </header>
+
+  <main class="calc">
+    <div class="calc-controls">
+      <label class="calc-field">
+        <span>Carburante</span>
+        <select id="calc-fuel">
+          {
+            FUEL_DISPLAY_ORDER.map((f: FuelKey) => (
+              <option value={f}>{FUEL_UI_LABELS[f]}</option>
+            ))
+          }
+        </select>
+      </label>
+
+      <button id="calc-locate" class="calc-locate" type="button">
+        ◎ Usa la mia posizione
+      </button>
+
+      <details class="calc-advanced">
+        <summary>Assunzioni (modificabili)</summary>
+        <div class="calc-advanced-body">
+          <label class="calc-field">
+            <span>Litri del pieno</span>
+            <input id="calc-liters" type="number" value={DEFAULTS.liters} min="1" max="200" />
+          </label>
+          <label class="calc-field">
+            <span>Consumo (km/litro)</span>
+            <input id="calc-kmpl" type="number" value={DEFAULTS.kmPerLiter} min="1" max="50" step="0.5" />
+          </label>
+        </div>
+      </details>
+    </div>
+
+    <p id="calc-status" class="calc-status" role="status" aria-live="polite"></p>
+    <div id="calc-result"></div>
+  </main>
+</Base>
+
+<style>
+  .calc-head {
+    background: var(--brand);
+    color: var(--bg);
+    padding: var(--space-4) var(--space-4) var(--space-5);
+  }
+  .calc-back {
+    color: var(--brand-ink);
+    text-decoration: none;
+    font-size: var(--fs-sm);
+  }
+  .calc-head h1 {
+    font-size: var(--fs-hero);
+    margin: var(--space-2) 0 var(--space-2);
+  }
+  .calc-head p {
+    color: var(--brand-ink);
+    font-size: var(--fs-sm);
+    margin: 0;
+    max-width: 620px;
+  }
+  .calc {
+    padding: var(--space-4);
+    max-width: 620px;
+    margin: 0 auto;
+  }
+  .calc-controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+  }
+  .calc-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+  }
+  .calc-field select,
+  .calc-field input {
+    padding: 11px 12px;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    font-family: var(--font-body);
+    font-size: var(--fs-base);
+    color: var(--text);
+  }
+  .calc-locate {
+    padding: 13px;
+    border: none;
+    border-radius: var(--radius);
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--font-body);
+    font-size: var(--fs-base);
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .calc-advanced summary {
+    font-size: var(--fs-sm);
+    color: var(--accent);
+    cursor: pointer;
+    padding: 4px 0;
+  }
+  .calc-advanced-body {
+    display: flex;
+    gap: var(--space-3);
+    margin-top: var(--space-2);
+  }
+  .calc-advanced-body .calc-field {
+    flex: 1;
+  }
+  .calc-status {
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+    text-align: center;
+  }
+  .calc-verdict {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-3);
+    font-size: var(--fs-base);
+    line-height: 1.5;
+  }
+  .calc-verdict-yes {
+    background: color-mix(in srgb, var(--price-good) 12%, var(--surface));
+    border: 0.5px solid var(--price-good);
+  }
+  .calc-verdict-no {
+    background: var(--surface-alt);
+    border: 0.5px solid var(--border);
+  }
+  .calc-verdict-icon {
+    font-size: 22px;
+    color: var(--accent);
+    flex: 0 0 auto;
+  }
+  .calc-assumptions {
+    font-size: var(--fs-xs);
+    color: var(--text-faint);
+    margin: 0 0 var(--space-4);
+  }
+  .calc-list-title {
+    font-size: var(--fs-lg);
+    margin: var(--space-4) 0 var(--space-3);
+  }
+  .calc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .calc-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 6px;
+  }
+  .calc-list li.calc-row-best {
+    border-color: var(--price-good);
+    border-width: 1.5px;
+  }
+  .calc-list a {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: var(--fs-sm);
+  }
+  .calc-row-meta {
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .calc-empty {
+    text-align: center;
+    color: var(--text-muted);
+    padding: var(--space-5);
+  }
+</style>
+
+<script>
+  import { initCalculator } from '../lib/savings/client.ts';
+  const base = import.meta.env.BASE_URL;
+  initCalculator(base + '/data/stations.json', base);
+</script>

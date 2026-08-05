@@ -1,0 +1,229 @@
+/*
+ * Stili del pannello filtri (bottom sheet). Globali: il pannello è creato via
+ * JavaScript, quindi gli stili scoped di Astro non lo raggiungerebbero.
+ */
+
+.filters-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+}
+.filters-sheet.open {
+  display: block;
+}
+.filters-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(18, 48, 58, 0.45);
+}
+.filters-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg);
+  border-radius: 18px 18px 0 0;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  animation: filters-up 0.25s ease;
+}
+@keyframes filters-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .filters-panel {
+    animation: none;
+  }
+}
+.filters-grip {
+  width: 36px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 20px;
+  margin: 10px auto 0;
+}
+.filters-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+}
+.filters-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-lg);
+  color: var(--text);
+}
+.filters-close {
+  border: none;
+  background: none;
+  font-size: 18px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+}
+.filters-reset {
+  border: none;
+  background: none;
+  font-size: var(--fs-sm);
+  color: var(--accent);
+  font-weight: 500;
+  cursor: pointer;
+}
+.filters-body {
+  padding: 4px 16px 8px;
+  overflow-y: auto;
+}
+.filter-group {
+  margin-bottom: 18px;
+}
+.filter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.filter-label {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text);
+}
+.filter-value {
+  font-family: var(--font-mono);
+  font-size: var(--fs-base);
+  color: var(--text);
+}
+input[type='range']#f-price {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.seg {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.seg button {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: var(--radius-sm);
+  border: 0.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+.seg button.active {
+  background: var(--brand);
+  color: var(--bg);
+  border-color: var(--brand);
+  font-weight: 500;
+}
+.checkrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--fs-sm);
+  color: var(--text);
+  text-align: left;
+}
+.checkrow .checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 1.5px solid var(--border-strong);
+  flex: 0 0 auto;
+}
+.checkrow.checked .checkbox {
+  background: var(--accent);
+  border-color: var(--accent);
+  position: relative;
+}
+.checkrow.checked .checkbox::after {
+  content: '✓';
+  color: #fff;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 13px;
+}
+.brand-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.brand-chip {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 0.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+.brand-chip.active {
+  background: var(--brand);
+  color: var(--bg);
+  border-color: var(--brand);
+}
+.filters-foot {
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  border-top: 0.5px solid var(--border);
+}
+.filters-apply {
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  font-weight: 500;
+  cursor: pointer;
+}
+.filters-apply:hover {
+  background: var(--accent-hover);
+}
+
+/* Pulsante trigger accanto ai carburanti */
+.filters-trigger {
+  flex: 0 0 auto;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 13px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+.filters-trigger-badge {
+  background: #fff;
+  color: var(--accent);
+  border-radius: 20px;
+  font-size: 10px;
+  padding: 0 5px;
+  font-weight: 700;
+}
