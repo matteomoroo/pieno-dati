@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-06T09:29:58.912Z",
-  "sourceExtractionDate": "2026-08-05",
-  "durationMs": 10657,
+  "generatedAt": "2026-08-07T07:59:51.134Z",
+  "sourceExtractionDate": "2026-08-06",
+  "durationMs": 10726,
   "rows": {
-    "anagraficaReceived": 23960,
-    "prezziReceived": 93350,
-    "stationsProduced": 21626,
-    "pricesAccepted": 90730,
+    "anagraficaReceived": 23961,
+    "prezziReceived": 93362,
+    "stationsProduced": 21629,
+    "pricesAccepted": 90742,
     "pricesRejected": 154
   },
   "rejections": {
