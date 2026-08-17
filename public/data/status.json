@@ -1,8 +1,8 @@
 {
   "status": "ok",
   "schemaVersion": 2,
-  "generatedAt": "2026-08-16T07:18:26.433Z",
-  "sourceExtractionDate": "2026-08-15",
+  "generatedAt": "2026-08-17T07:39:11.019Z",
+  "sourceExtractionDate": "2026-08-16",
   "freshness": "fresh",
-  "stations": 21573
+  "stations": 21566
 }
