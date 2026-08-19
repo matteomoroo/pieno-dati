@@ -334,5 +334,26 @@
       "diesel_plus": 2.4115,
       "hvo": 2.2436
     }
+  },
+  {
+    "date": "2026-08-18",
+    "self": {
+      "benzina": 1.9977,
+      "gasolio": 2.1047,
+      "gpl": 0.7552,
+      "metano": 1.5807,
+      "benzina_plus": 2.158,
+      "diesel_plus": 2.2345,
+      "hvo": 2.0879
+    },
+    "served": {
+      "benzina": 2.1312,
+      "gasolio": 2.2376,
+      "gpl": 0.7552,
+      "metano": 1.6359,
+      "benzina_plus": 2.3372,
+      "diesel_plus": 2.4173,
+      "hvo": 2.2487
+    }
   }
 ]
