@@ -1,12 +1,12 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-21T07:29:02.724Z",
+  "generatedAt": "2026-08-22T07:18:50.299Z",
   "sourceExtractionDate": "2026-08-20",
   "freshness": {
     "sourceExtractionDate": "2026-08-20",
-    "generatedAt": "2026-08-21T07:29:02.724Z",
-    "ageDays": 1,
-    "status": "fresh"
+    "generatedAt": "2026-08-22T07:18:50.299Z",
+    "ageDays": 2,
+    "status": "delayed"
   },
   "total": 21567,
   "counts": {
