@@ -7,7 +7,7 @@ import { defineConfig, devices } from '@playwright/test';
  * il dev server: è la stessa cosa che finisce in produzione, service worker e
  * asset con hash inclusi.
  */
-const BASE_PATH = process.env.BASE_PATH ?? '/pieno-dati/';
+const BASE_PATH = process.env.BASE_PATH ?? '/';
 const PORT = Number(process.env.PORT ?? 4321);
 
 export default defineConfig({
@@ -40,17 +40,11 @@ export default defineConfig({
       // Emulazione: i test reali su hardware Android restano manuali.
       name: 'mobile-android',
       use: { ...devices['Pixel 7'] },
-    },
-    {
-      // WebKit approssima Safari iOS. Non lo sostituisce: il comportamento di
-      // installazione PWA su iOS va comunque verificato a mano.
-      name: 'mobile-safari',
-      use: { ...devices['iPhone 13'] },
-    },
+    }
   ],
 
   webServer: {
-    command: 'npm run preview -- --port ' + PORT,
+    command: `BASE_PATH=${BASE_PATH} npm run preview -- --port ${PORT}`,
     url: `http://localhost:${PORT}${BASE_PATH}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

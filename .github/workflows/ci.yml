@@ -106,10 +106,12 @@ jobs:
         if: steps.pw-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
 
-      - name: Build
-        run: npm run build:preview
+      - name: Build (root, per i test E2E)
+        run: npm run build:root
 
       - name: Test end-to-end
+        env:
+          BASE_PATH: /
         run: npm run test:e2e
 
       # Il report HTML si carica sempre, verde o rosso: serve anche per leggere
