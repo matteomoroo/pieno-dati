@@ -58,7 +58,6 @@ test.describe('service worker', () => {
 
   test('elimina le cache Pieno obsolete durante activate', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
     await page.evaluate(() => navigator.serviceWorker.ready);
 
     // Simula una cache lasciata da una versione precedente.
@@ -128,6 +127,14 @@ test.describe('manifest e installabilità', () => {
 test.describe('offline', () => {
   test('mostra i dati salvati dichiarando la data reale', async ({ page, context }) => {
     await page.goto('/calcola-risparmio');
+    // Il service worker deve essere pronto e controllare la pagina prima di
+    // andare offline: è lui a servire l'HTML e i dati dalla cache. Senza questa
+    // attesa, il reload offline può non trovare la pagina in cache.
+    await page.evaluate(() => navigator.serviceWorker.ready);
+    await page.waitForFunction(() => navigator.serviceWorker.controller !== null, {
+      timeout: 20_000,
+    });
+
     await page.locator('#calc-place').fill('Milano');
     const sw_sugg_1 = page.locator('#calc-suggestions li').first();
     await expect(sw_sugg_1).toBeVisible({ timeout: 15_000 });
@@ -138,6 +145,9 @@ test.describe('offline', () => {
 
     await context.setOffline(true);
     await page.reload();
+    // Se l'HTML non è in cache la pagina non si carica: verifichiamo prima che
+    // il campo esista, con un margine, invece di fallire secco su fill().
+    await expect(page.locator('#calc-place')).toBeVisible({ timeout: 20_000 });
     await page.locator('#calc-place').fill('Milano');
     const sw_sugg_2 = page.locator('#calc-suggestions li').first();
     await expect(sw_sugg_2).toBeVisible({ timeout: 15_000 });

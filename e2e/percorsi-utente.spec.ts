@@ -50,9 +50,10 @@ test.describe('homepage', () => {
 
   test('lo skip link porta al contenuto da tastiera', async ({ page }) => {
     await page.goto('/', { waitUntil: 'load' });
-    // Lo skip link è il primo elemento focalizzabile del documento. Portiamo il
-    // focus a inizio pagina agendo sul body (senza cliccarci dentro, che
-    // sposterebbe il focus su un campo), poi un Tab lo raggiunge.
+    // Con il reload spurio del service worker ormai eliminato, basta assicurarsi
+    // che il body sia pronto. Niente `networkidle`: la mappa scarica tile di
+    // continuo e la rete non si fermerebbe mai.
+    await expect(page.locator('body')).toBeVisible();
     await page.evaluate(() => (document.activeElement as HTMLElement)?.blur());
     await page.keyboard.press('Tab');
     const focused = page.locator(':focus');
@@ -94,19 +95,20 @@ test.describe('ricerca località in homepage', () => {
   test('trova un comune valido', async ({ page }) => {
     await page.goto('/', { waitUntil: 'load' });
     const search = page.locator('#q');
-    // Focus prima di digitare: fa partire il precaricamento dell'indice
-    // (l'input ha un listener sul focus che chiama ensureIndex).
+    // Aspettiamo che l'input esista, non che tutta la rete taccia: la mappa
+    // scarica tile in continuazione, quindi `networkidle` sarebbe inaffidabile.
+    await expect(search).toBeVisible({ timeout: 15_000 });
+    // Focus: fa partire il precaricamento dell'indice di ricerca.
     await search.focus();
     // pressSequentially simula una digitazione reale, scatenando gli eventi
-    // input su cui è agganciato il debounce della ricerca. `fill` a volte non
-    // li innesca in modo affidabile.
-    await search.pressSequentially('Milano', { delay: 50 });
+    // input su cui è agganciato il debounce. `fill` a volte non li innesca.
+    await search.pressSequentially('Milano', { delay: 80 });
     // La lista dei risultati smette di essere hidden quando ci sono match.
     const list = page.locator('.search-results');
-    await expect(list).toBeVisible({ timeout: 15_000 });
+    await expect(list).toBeVisible({ timeout: 20_000 });
     await expect(
       list.locator('.search-item', { hasText: /Milano/i }).first(),
-    ).toBeVisible({ timeout: 15_000 });
+    ).toBeVisible({ timeout: 20_000 });
   });
 
   test('gestisce una query inesistente senza errori', async ({ page }) => {
