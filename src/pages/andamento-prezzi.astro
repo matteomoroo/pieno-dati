@@ -12,8 +12,8 @@ import { loadMeta } from '../lib/data/load.ts';
 import type { FuelKey, HistoryPoint } from '../types/pieno.ts';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { HOME } from '../lib/site.ts';
 
-const base = import.meta.env.BASE_URL;
 
 // Carica lo storico.
 function loadHistory(): HistoryPoint[] {
@@ -51,7 +51,7 @@ const daysAvailable = history.length;
   canonicalPath="/andamento-prezzi"
 >
   <header class="trend-head">
-    <a class="trend-back" href={base}>‹ Pieno</a>
+    <a class="trend-back" href={HOME}>‹ Pieno</a>
     <h1>Andamento dei prezzi</h1>
     <p>
       Come cambiano i prezzi medi nazionali (self) nel tempo.
@@ -67,7 +67,7 @@ const daysAvailable = history.length;
     </p>
   </header>
 
-  <main class="trend">
+  <main class="trend" id="contenuto">
     {
       charts.map((c) => (
         <section class="trend-card">

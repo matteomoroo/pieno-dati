@@ -12,7 +12,6 @@ import type {
   MetaFile,
   StationsFile,
   Station,
-  FuelKey,
 } from '../../types/pieno.ts';
 
 // Etichette e ordine vivono in un modulo puro (client-safe); qui li

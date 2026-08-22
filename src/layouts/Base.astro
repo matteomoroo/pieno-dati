@@ -1,17 +1,34 @@
 ---
 /**
  * Layout base di Pieno.
- * Gestisce <head>, SEO, font, e wrappa il contenuto di ogni pagina.
+ * Gestisce <head>, SEO, font, service worker e wrappa il contenuto.
+ *
+ * Modifiche di questo sprint:
+ *  - canonical e Open Graph passano dagli helper centralizzati, così restano
+ *    corretti sia con BASE_PATH=/pieno-dati/ sia con BASE_PATH=/;
+ *  - aggiunta una vera social preview image (1200x630);
+ *  - font self-hosted: niente più richiesta bloccante a fonts.googleapis.com;
+ *  - skip link per la navigazione da tastiera;
+ *  - il service worker segnala una versione nuova e la pagina la applica.
  */
+import '@fontsource/inter/latin-400.css';
+import '@fontsource/inter/latin-500.css';
+import '@fontsource/archivo/latin-500.css';
+import '@fontsource/archivo/latin-600.css';
+import '@fontsource/space-mono/latin-400.css';
+import '@fontsource/space-mono/latin-700.css';
 import '../styles/tokens.css';
+import { withBase } from '../lib/site.ts';
 
 export interface Props {
   title: string;
   description: string;
-  /** Path canonico relativo (es. "/mappa"). Default: home. */
+  /** Path canonico relativo (es. "/calcola-risparmio"). Default: home. */
   canonicalPath?: string;
   /** Dati strutturati JSON-LD (oggetto o array), inseriti nel <head>. */
   structuredData?: object | object[];
+  /** Esclude la pagina dall'indice (404, pagine di servizio). */
+  noindex?: boolean;
 }
 
 const {
@@ -19,11 +36,12 @@ const {
   description,
   canonicalPath = '',
   structuredData,
+  noindex = false,
 } = Astro.props;
-const canonical = new URL(
-  import.meta.env.BASE_URL + canonicalPath,
-  Astro.site,
-).href;
+
+const origin = (Astro.site?.origin ?? '').replace(/\/+$/, '');
+const canonical = `${origin}${withBase(canonicalPath)}`;
+const ogImage = `${origin}${withBase('/og/og-default.png')}`;
 ---
 
 <!doctype html>
@@ -34,32 +52,32 @@ const canonical = new URL(
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
 
     <!-- Open Graph / social -->
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Pieno" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:locale" content="it_IT" />
-    <meta name="twitter:card" content="summary" />
-
-    <!-- Font: Archivo (titoli), Inter (corpo), Space Mono (prezzi).
-         preconnect accelera il caricamento. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600&family=Inter:wght@400;500&family=Space+Mono:wght@400;700&display=swap"
-      rel="stylesheet"
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Pieno — prezzi carburante in tutta Italia, dati ufficiali MIMIT"
     />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
 
     <meta name="theme-color" content="#12303a" />
 
     <!-- PWA -->
-    <link rel="manifest" href={import.meta.env.BASE_URL + '/manifest.webmanifest'} />
-    <link
-      rel="apple-touch-icon"
-      href={import.meta.env.BASE_URL + '/icons/apple-touch-icon.png'}
-    />
+    <link rel="manifest" href={withBase('/manifest.webmanifest')} />
+    <link rel="apple-touch-icon" href={withBase('/icons/apple-touch-icon.png')} />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Pieno" />
     {
@@ -72,13 +90,119 @@ const canonical = new URL(
     }
   </head>
   <body>
+    <a class="skip-link" href="#contenuto">Vai al contenuto</a>
     <slot />
+
+    <div id="sw-update" class="sw-update" hidden role="status">
+      <span>È disponibile una versione aggiornata di Pieno.</span>
+      <button type="button" id="sw-update-btn">Aggiorna</button>
+    </div>
+
+    <style>
+      .skip-link {
+        position: absolute;
+        left: -9999px;
+        top: 0;
+        z-index: 1000;
+        padding: 0.75rem 1rem;
+        background: var(--c-ink, #12303a);
+        color: #fff;
+        border-radius: 0 0 8px 0;
+      }
+      .skip-link:focus {
+        left: 0;
+      }
+      .sw-update {
+        position: fixed;
+        left: 50%;
+        bottom: 1rem;
+        transform: translateX(-50%);
+        z-index: 999;
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        max-width: calc(100vw - 2rem);
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        background: var(--c-ink, #12303a);
+        color: #f7f5f0;
+        font-size: 0.9rem;
+        box-shadow: 0 6px 24px rgb(0 0 0 / 25%);
+      }
+      .sw-update button {
+        min-height: 44px;
+        padding: 0 1rem;
+        border: 0;
+        border-radius: 8px;
+        background: #e8b447;
+        color: #12303a;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+
     <script>
+      import { withBase } from '../lib/site.ts';
+
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker
-            .register(import.meta.env.BASE_URL + '/sw.js')
-            .catch(() => {});
+        window.addEventListener('load', async () => {
+          try {
+            const reg = await navigator.serviceWorker.register(withBase('/sw.js'));
+
+            const banner = document.getElementById('sw-update');
+            const button = document.getElementById(
+              'sw-update-btn',
+            ) as HTMLButtonElement | null;
+
+            const offerUpdate = (worker: ServiceWorker | null): void => {
+              if (!worker || !banner || !button) return;
+              banner.hidden = false;
+              button.onclick = () => {
+                worker.postMessage({ type: 'SKIP_WAITING' });
+              };
+            };
+
+            if (reg.waiting) offerUpdate(reg.waiting);
+
+            reg.addEventListener('updatefound', () => {
+              const installing = reg.installing;
+              if (!installing) return;
+              installing.addEventListener('statechange', () => {
+                // Una versione nuova è pronta e c'era già un controller:
+                // significa che l'utente sta guardando la versione vecchia.
+                if (
+                  installing.state === 'installed' &&
+                  navigator.serviceWorker.controller
+                ) {
+                  offerUpdate(reg.waiting);
+                }
+              });
+            });
+
+            // Ricarichiamo solo quando il controller cambia DOPO che ce n'era
+            // già uno: è un aggiornamento reale da versione A a B. Alla primissima
+            // visita `controller` è null finché il service worker non prende il
+            // controllo; ricaricare in quel caso sarebbe un reload spurio, fastidioso
+            // per l'utente e capace di interrompere interazioni in corso.
+            let reloading = false;
+            const hadController = Boolean(navigator.serviceWorker.controller);
+
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+              if (reloading || !hadController) return;
+              reloading = true;
+              window.location.reload();
+            });
+          } catch {
+            // Il sito funziona anche senza service worker: non disturbiamo l'utente.
+          }
         });
       }
     </script>

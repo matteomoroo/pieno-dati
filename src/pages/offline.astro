@@ -1,0 +1,37 @@
+---
+/**
+ * Pagina mostrata dal service worker quando l'utente è offline e la pagina
+ * richiesta non è in cache. Non finge che i dati siano aggiornati.
+ */
+import Base from '../layouts/Base.astro';
+import { HOME } from '../lib/site.ts';
+---
+
+<Base
+  title="Sei offline | Pieno"
+  description="Pieno non è raggiungibile senza connessione."
+  canonicalPath="/offline"
+  noindex
+>
+  <main class="off" id="contenuto">
+    <h1>Sei senza connessione</h1>
+    <p>
+      Questa pagina non era stata salvata sul dispositivo, quindi non possiamo
+      mostrartela adesso.
+    </p>
+    <p>
+      Le pagine che hai già visitato restano consultabili, ma i prezzi che
+      vedi sono quelli dell'ultimo aggiornamento scaricato: controlla sempre la
+      data indicata accanto ai prezzi.
+    </p>
+    <p><a href={HOME}>Riprova dalla home</a></p>
+  </main>
+</Base>
+
+<style>
+  .off {
+    max-width: 38rem;
+    margin: 0 auto;
+    padding: var(--space-6, 2rem) var(--space-4, 1rem);
+  }
+</style>

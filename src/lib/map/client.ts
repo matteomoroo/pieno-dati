@@ -5,8 +5,7 @@
  *
  * Espone initMap(), chiamata dall'isola con la URL dei dati e il carburante.
  */
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
+import mapStylesUrl from 'maplibre-gl/dist/maplibre-gl.css?url';
 import type { Station, StationsFile, FuelKey } from '../../types/pieno.ts';
 
 interface InitOptions {
@@ -14,7 +13,35 @@ interface InitOptions {
   initialFuel: FuelKey;
 }
 
+/**
+ * Inserisce il CSS di MapLibre come <link> a runtime.
+ * Con un `import` (statico o dinamico) Astro raccoglie il foglio di stile nel
+ * bundle CSS della pagina e lo mette in <head>: 65 KB render-blocking su ogni
+ * pagina che includa la mappa, anche prima che la mappa serva. Con `?url`
+ * otteniamo solo il percorso dell'asset e decidiamo noi quando caricarlo.
+ */
+let stylesPromise: Promise<void> | null = null;
+function loadMapStyles(): Promise<void> {
+  if (stylesPromise) return stylesPromise;
+  stylesPromise = new Promise<void>((resolve) => {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = mapStylesUrl;
+    // Non bloccare l'inizializzazione se il CSS tarda: la mappa resta usabile.
+    link.onload = () => resolve();
+    link.onerror = () => resolve();
+    document.head.appendChild(link);
+  });
+  return stylesPromise;
+}
+
 export async function initMap({ dataUrl, initialFuel }: InitOptions): Promise<void> {
+  // MapLibre (800 KB di JS + 65 KB di CSS) viene caricato solo qui.
+  // Con un import statico Vite issava il CSS nel <head> di ogni pagina che
+  // includa la mappa, bloccando il rendering anche quando la mappa non è
+  // ancora visibile.
+  const { default: maplibregl } = await import('maplibre-gl');
+  await loadMapStyles();
   // baseUrl derivato dalla dataUrl (.../data/stations.json -> ...)
   const baseUrl = dataUrl.replace(/\/data\/stations\.json$/, '');
   const slugify = (name: string): string =>

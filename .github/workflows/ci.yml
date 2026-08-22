@@ -1,0 +1,136 @@
+name: CI
+
+# Gira su ogni push e su ogni pull request. Nessun deploy: dice solo se il
+# codice è sano. Il deploy (deploy.yml) richiama questo stesso workflow e non
+# pubblica finché verify ed e2e non sono verdi.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # Permette a deploy.yml di riusare esattamente questa catena invece di
+  # duplicarla: un solo punto di verità per "cosa significa build sana".
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    # Ubuntu fissato, non "latest": Playwright supporta ufficialmente le LTS
+    # (22.04 e 24.04). "ubuntu-latest" è un bersaglio mobile che un domani
+    # GitHub sposterà a 26.04, potenzialmente non ancora supportata.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Installazione pulita
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # Bloccante. Prima era `npm run typecheck || echo "..."`, che nascondeva
+      # gli errori, e il tsconfig non includeva nemmeno src/.
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit test
+        run: npm test
+
+      - name: Build (preview GitHub Pages)
+        run: npm run build:preview
+
+      - name: Smoke test build preview
+        env:
+          SITE_URL: https://matteomoroo.github.io
+          BASE_PATH: /pieno-dati/
+        run: npm run smoke
+
+      # Verifica che la stessa codebase compili anche per il dominio alla
+      # radice: è il criterio di accettazione della portabilità.
+      - name: Build (produzione root)
+        run: npm run build:root
+
+      - name: Smoke test build root
+        env:
+          SITE_URL: https://pieno.example
+          BASE_PATH: /
+        run: npm run smoke
+
+  e2e:
+    runs-on: ubuntu-24.04
+    needs: verify
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Installazione pulita
+        run: npm ci
+
+      # La versione di Playwright determina quella dei browser: la usiamo come
+      # chiave di cache, così i browser si riscaricano solo quando Playwright
+      # cambia versione, non a ogni run.
+      - name: Versione di Playwright
+        id: pw
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache dei browser Playwright
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+
+      # Se la cache ha centrato, i binari dei browser ci sono già: installiamo
+      # solo le dipendenze di sistema (--only-shell è sufficiente per Chromium
+      # headless e non riscarica il browser). Su cache mancante, installazione
+      # completa. In entrambi i casi il browser non viene scaricato due volte.
+      - name: Installa Chromium (cache mancante)
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Dipendenze di sistema (cache presente)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Build (root, per i test E2E)
+        run: npm run build:root
+
+      - name: Test end-to-end
+        env:
+          BASE_PATH: /
+        run: npm run test:e2e
+
+      # Il report HTML si carica sempre, verde o rosso: serve anche per leggere
+      # il conteggio di passati/falliti/skip di una run riuscita.
+      - name: Report HTML Playwright
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      # test-results/ contiene screenshot, video e trace dei soli test falliti.
+      # Vuoto quando tutto passa, quindi lo carichiamo solo sui fallimenti.
+      - name: Screenshot, video e trace dei fallimenti
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failures
+          path: test-results/
+          retention-days: 14
+          if-no-files-found: ignore

@@ -9,8 +9,8 @@ import Base from '../layouts/Base.astro';
 import { FUEL_DISPLAY_ORDER, FUEL_UI_LABELS } from '../lib/data/fuels-ui.ts';
 import { DEFAULTS } from '../lib/savings/compute.ts';
 import type { FuelKey } from '../types/pieno.ts';
+import { HOME } from '../lib/site.ts';
 
-const base = import.meta.env.BASE_URL;
 ---
 
 <Base
@@ -19,16 +19,17 @@ const base = import.meta.env.BASE_URL;
   canonicalPath="/calcola-risparmio"
 >
   <header class="calc-head">
-    <a class="calc-back" href={base}>‹ Pieno</a>
+    <a class="calc-back" href={HOME}>‹ Pieno</a>
     <h1>Dove conviene fare rifornimento</h1>
     <p>
       A volte un distributore più lontano ma più economico fa risparmiare, altre
-      volte il viaggio si mangia il risparmio. Scegli il carburante e attiva la
-      posizione: Pieno fa il conto per te.
+      volte il viaggio si mangia il risparmio. Scegli il carburante e dì a Pieno
+      dove sei — con la posizione del telefono o cercando una città: il conto
+      lo facciamo noi.
     </p>
   </header>
 
-  <main class="calc">
+  <main class="calc" id="contenuto">
     <div class="calc-controls">
       <label class="calc-field">
         <span>Carburante</span>
@@ -41,9 +42,28 @@ const base = import.meta.env.BASE_URL;
         </select>
       </label>
 
-      <button id="calc-locate" class="calc-locate" type="button">
-        ◎ Usa la mia posizione
-      </button>
+      <div class="calc-place-group">
+        <button id="calc-locate" class="calc-locate" type="button">
+          ◎ Usa la mia posizione
+        </button>
+        <span class="calc-or">oppure</span>
+        <label class="calc-field calc-field-place">
+          <span>Cerca una città</span>
+          <input
+            id="calc-place"
+            type="search"
+            autocomplete="off"
+            autocapitalize="words"
+            spellcheck="false"
+            placeholder="Es. Milano, Roma, Bari"
+            role="combobox"
+            aria-expanded="false"
+            aria-autocomplete="list"
+            aria-controls="calc-suggestions"
+          />
+        </label>
+        <ul id="calc-suggestions" class="calc-suggestions" role="listbox" aria-label="Città suggerite" hidden></ul>
+      </div>
 
       <details class="calc-advanced">
         <summary>Assunzioni (modificabili)</summary>
@@ -60,6 +80,7 @@ const base = import.meta.env.BASE_URL;
       </details>
     </div>
 
+    <p id="calc-freshness" class="calc-freshness" hidden></p>
     <p id="calc-status" class="calc-status" role="status" aria-live="polite"></p>
     <div id="calc-result"></div>
   </main>
@@ -211,10 +232,62 @@ const base = import.meta.env.BASE_URL;
     color: var(--text-muted);
     padding: var(--space-5);
   }
+
+  .calc-place-group {
+    display: grid;
+    gap: var(--space-2);
+    position: relative;
+  }
+  .calc-or {
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+    text-align: center;
+  }
+  .calc-suggestions {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--border, #d8d2c6);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--surface, #fff);
+  }
+  .calc-suggestions li {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-2);
+    align-items: baseline;
+    padding: 0.7rem 0.9rem;
+    min-height: 44px;
+    cursor: pointer;
+  }
+  .calc-suggestions li:hover,
+  .calc-suggestions li:focus {
+    background: var(--surface-alt, #f2efe8);
+    outline: 2px solid var(--c-accent, #12303a);
+    outline-offset: -2px;
+  }
+  .calc-opt-meta {
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .calc-opt-empty {
+    cursor: default;
+    color: var(--text-muted);
+  }
+  .calc-freshness {
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+    margin: 0 0 var(--space-2);
+  }
+  .calc-status[data-tone='error'] {
+    color: var(--c-danger, #9b2c2c);
+  }
 </style>
 
 <script>
   import { initCalculator } from '../lib/savings/client.ts';
-  const base = import.meta.env.BASE_URL;
-  initCalculator(base + '/data/stations.json', base);
+  import { BASE } from '../lib/site.ts';
+  initCalculator(BASE);
 </script>

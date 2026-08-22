@@ -4,3 +4,7 @@
 // TypeScript segnali "modulo non trovato".
 declare module '*.css';
 declare module 'maplibre-gl/dist/maplibre-gl.css';
+declare module '*.css?url' {
+  const url: string;
+  export default url;
+}

@@ -8,8 +8,8 @@ import Base from '../../layouts/Base.astro';
 import AreaStats from '../../components/territory/AreaStats.astro';
 import { getTerritory } from '../../lib/geo/loadTerritory.ts';
 import { loadMeta, formatPrice } from '../../lib/data/load.ts';
-import { toSlug } from '../../lib/geo/regions.ts';
 import { breadcrumbLd } from '../../lib/seo/breadcrumb.ts';
+import { BASE, HOME } from '../../lib/site.ts';
 
 export function getStaticPaths() {
   return getTerritory().map((region) => ({
@@ -27,10 +27,10 @@ const provincesByPrice = [...region.province]
   .filter((p) => p.stats.benzina?.self)
   .sort((a, b) => (a.stats.benzina!.self!.mean - b.stats.benzina!.self!.mean));
 
-const base = import.meta.env.BASE_URL;
+const base = BASE;
 const site = Astro.site?.href.replace(/\/$/, '') ?? '';
 const ld = breadcrumbLd([
-  { name: 'Home', url: `${site}${base}` },
+  { name: 'Home', url: `${site}${HOME}` },
   { name: region.name, url: `${site}${base}/prezzi-carburante/${region.slug}` },
 ]);
 ---
@@ -42,12 +42,12 @@ const ld = breadcrumbLd([
   structuredData={ld}
 >
   <nav class="breadcrumb" aria-label="Percorso">
-    <a href={base}>Home</a>
+    <a href={HOME}>Home</a>
     <span aria-hidden="true">›</span>
     <span>{region.name}</span>
   </nav>
 
-  <main class="territory">
+  <main class="territory" id="contenuto">
     <header class="territory-head">
       <h1>Prezzi carburante in {region.name}</h1>
       <p class="territory-sub">

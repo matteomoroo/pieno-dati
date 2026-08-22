@@ -123,7 +123,20 @@ function cheapestFor(
   return out;
 }
 
-const MIN_COMUNE_STATIONS = 5;
+/**
+ * Numero minimo di distributori perché un comune abbia una pagina propria.
+ *
+ * Scelta deliberata, non un limite tecnico: sotto questa soglia la pagina
+ * comunale avrebbe troppo poco contenuto per essere utile a un lettore o
+ * credibile per un motore di ricerca (mediane calcolate su una o due
+ * stazioni, nessun confronto possibile). Le stazioni dei comuni esclusi
+ * contribuiscono comunque alle statistiche di provincia e regione e hanno
+ * ognuna la propria pagina stazione: non si perde nulla dall'indice.
+ *
+ * Effetto sui dati di agosto 2026: 5.265 comuni presenti, 1.068 pubblicati,
+ * 4.197 esclusi (di cui 2.232 con un solo distributore).
+ */
+export const MIN_COMUNE_STATIONS = 5;
 
 /**
  * Costruisce l'albero territoriale completo.
