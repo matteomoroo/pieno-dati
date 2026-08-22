@@ -47,7 +47,21 @@ const OFFLINE_URL = BASE + '/offline';
 
 // App shell minima. Se una risorsa non è disponibile l'install non deve
 // fallire in blocco, altrimenti il service worker non si attiva mai.
-const PRECACHE = [HOME, BASE + '/manifest.webmanifest', OFFLINE_URL];
+//
+// Includiamo le pagine strumento (calcolatore e andamento) e l'indice delle
+// località: sono il cuore della promessa offline della PWA. Senza precache,
+// la primissima navigazione avviene prima che il service worker prenda il
+// controllo, quindi quelle pagine non finirebbero mai in cache e l'utente
+// che installa l'app e va offline si troverebbe il calcolatore inaccessibile.
+const PRECACHE = [
+  HOME,
+  BASE + '/manifest.webmanifest',
+  OFFLINE_URL,
+  BASE + '/calcola-risparmio',
+  BASE + '/andamento-prezzi',
+  BASE + '/data/search-index.json',
+  BASE + '/data/status.json',
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

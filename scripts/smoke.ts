@@ -191,6 +191,31 @@ const checks: Check[] = [
         base === BASE_PREFIX,
         `BASE del service worker è "${base}", atteso "${BASE_PREFIX}"`,
       );
+
+      // Ogni risorsa dichiarata nel precache deve esistere: se manca, la PWA
+      // si installa ma quella pagina resta inaccessibile offline.
+      const block = sw.match(/const PRECACHE = \[([\s\S]*?)\]/)?.[1] ?? '';
+      const entries = [...block.matchAll(/BASE \+ '([^']+)'|(\bHOME\b)|(\bOFFLINE_URL\b)/g)];
+      assert(entries.length >= 3, 'precache sospettosamente vuoto');
+
+      const paths = entries.map((m) => {
+        if (m[2]) return '/';
+        if (m[3]) return '/offline';
+        return m[1] as string;
+      });
+
+      for (const p of paths) {
+        // Una rotta senza estensione è servita come cartella/index.html.
+        const relative = p === '/' ? 'index.html' : p.replace(/^\//, '');
+        const candidate = /\.[a-z]+$/.test(relative)
+          ? relative
+          : join(relative, 'index.html');
+        assert(
+          existsSync(file(candidate)),
+          `risorsa in precache non presente nella build: ${p}`,
+        );
+      }
+      passed.push(`  → precache: ${paths.length} risorse, tutte presenti`);
     },
   },
   {
