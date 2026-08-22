@@ -194,6 +194,7 @@ const ogImage = `${origin}${withBase('/og/og-default.png')}`;
             // per l'utente e capace di interrompere interazioni in corso.
             let reloading = false;
             const hadController = Boolean(navigator.serviceWorker.controller);
+
             navigator.serviceWorker.addEventListener('controllerchange', () => {
               if (reloading || !hadController) return;
               reloading = true;

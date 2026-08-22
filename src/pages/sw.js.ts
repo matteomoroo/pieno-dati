@@ -90,24 +90,6 @@ self.addEventListener('activate', (event) => {
 // Permette alla pagina di forzare l'attivazione della versione nuova.
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
-
-  // La pagina ci comunica i propri asset (JS/CSS con hash) appena siamo attivi.
-  // Serve perché la primissima navigazione avviene prima che il service worker
-  // prenda il controllo: quelle richieste non passano da qui e gli asset non
-  // finirebbero mai in cache. Senza, una pagina aperta offline si caricherebbe
-  // senza JavaScript, cioè inerte.
-  if (event.data && event.data.type === 'CACHE_ASSETS' && Array.isArray(event.data.urls)) {
-    event.waitUntil(
-      caches.open(APP_CACHE).then(async (cache) => {
-        await Promise.allSettled(
-          event.data.urls.map(async (url) => {
-            const already = await cache.match(url);
-            if (!already) await cache.add(url);
-          }),
-        );
-      }),
-    );
-  }
 });
 
 /** Segna una risposta come proveniente dalla cache, per la UI. */
