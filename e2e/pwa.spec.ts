@@ -143,6 +143,27 @@ test.describe('offline', () => {
 
     const dataOnline = await page.locator('#calc-freshness').textContent();
 
+    // Prima di andare offline verifichiamo che gli asset della pagina siano
+    // davvero in cache: è la condizione perché offline la pagina si carichi
+    // interattiva e non come guscio vuoto. Attesa esplicita, non a tempo.
+    await expect
+      .poll(
+        async () =>
+          page.evaluate(async () => {
+            const names = await caches.keys();
+            for (const n of names) {
+              const cache = await caches.open(n);
+              const keys = await cache.keys();
+              if (keys.some((r) => r.url.includes('/assets/') && r.url.endsWith('.js'))) {
+                return true;
+              }
+            }
+            return false;
+          }),
+        { timeout: 20_000 },
+      )
+      .toBe(true);
+
     await context.setOffline(true);
     await page.reload();
     // Se l'HTML non è in cache la pagina non si carica: verifichiamo prima che
