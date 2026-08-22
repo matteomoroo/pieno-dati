@@ -35,8 +35,25 @@ test.describe('service worker', () => {
     await page.goto('/');
     await page.evaluate(() => navigator.serviceWorker.ready);
 
-    const names = await page.evaluate(() => caches.keys());
-    expect(names.some((n) => n.includes(build as string))).toBe(true);
+    // Il primo controller può innescare un reload (l'aggiornamento automatico
+    // che abbiamo progettato): aspettiamo che un service worker controlli la
+    // pagina, poi verifichiamo che esista una cache col BUILD corrente.
+    // Il poll ritenta se una navigazione distrugge il contesto a metà lettura.
+    await page.waitForLoadState('load');
+
+    await expect
+      .poll(
+        async () => {
+          try {
+            const names = await page.evaluate(() => caches.keys());
+            return names.some((n) => n.includes(build as string));
+          } catch {
+            return false; // contesto distrutto da un reload: ritenta
+          }
+        },
+        { timeout: 20_000 },
+      )
+      .toBe(true);
   });
 
   test('elimina le cache Pieno obsolete durante activate', async ({ page }) => {
@@ -106,7 +123,9 @@ test.describe('offline', () => {
   test('mostra i dati salvati dichiarando la data reale', async ({ page, context }) => {
     await page.goto('/calcola-risparmio');
     await page.locator('#calc-place').fill('Milano');
-    await page.locator('#calc-suggestions li').first().click();
+    const sw_sugg_1 = page.locator('#calc-suggestions li').first();
+    await expect(sw_sugg_1).toBeVisible({ timeout: 15_000 });
+    await sw_sugg_1.click();
     await expect(page.locator('#calc-freshness')).toBeVisible({ timeout: 20_000 });
 
     const dataOnline = await page.locator('#calc-freshness').textContent();
@@ -114,7 +133,9 @@ test.describe('offline', () => {
     await context.setOffline(true);
     await page.reload();
     await page.locator('#calc-place').fill('Milano');
-    await page.locator('#calc-suggestions li').first().click();
+    const sw_sugg_2 = page.locator('#calc-suggestions li').first();
+    await expect(sw_sugg_2).toBeVisible({ timeout: 15_000 });
+    await sw_sugg_2.click();
 
     const offline = page.locator('#calc-freshness');
     await expect(offline).toBeVisible({ timeout: 20_000 });
