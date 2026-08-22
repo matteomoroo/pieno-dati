@@ -15,7 +15,7 @@
     "build:root": "SITE_URL=https://pieno.example BASE_PATH=/ astro build",
     "preview": "astro preview",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit && astro check",
+    "typecheck": "astro sync && tsc --noEmit && astro check",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
