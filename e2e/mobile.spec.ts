@@ -40,7 +40,7 @@ for (const vp of VIEWPORTS) {
 
     test('la ricerca manuale funziona anche su schermo stretto', async ({ page }) => {
       await page.goto('/calcola-risparmio');
-      await page.locator('#calc-place').fill('Torino');
+      await page.locator('#calc-place').pressSequentially('Torino', { delay: 80 });
       await expect(page.locator('#calc-suggestions li').first()).toBeVisible({
         timeout: 10_000,
       });

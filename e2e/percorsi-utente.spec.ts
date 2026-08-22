@@ -137,7 +137,7 @@ test.describe('calcolatore del risparmio', () => {
     const errors = collectConsoleErrors(page);
     await page.goto('/calcola-risparmio');
 
-    await page.locator('#calc-place').fill('Milano');
+    await page.locator('#calc-place').pressSequentially('Milano', { delay: 80 });
     // Aspetta che il suggerimento compaia prima di cliccarlo (evita flakiness).
     const sugg_milano = page.locator('#calc-suggestions li').first();
     await expect(sugg_milano).toBeVisible({ timeout: 15_000 });
@@ -157,7 +157,7 @@ test.describe('calcolatore del risparmio', () => {
     page.on('request', (req) => requested.push(req.url()));
 
     await page.goto('/calcola-risparmio');
-    await page.locator('#calc-place').fill('Roma');
+    await page.locator('#calc-place').pressSequentially('Roma', { delay: 80 });
     // Aspetta che il suggerimento compaia prima di cliccarlo (evita flakiness).
     const sugg_roma = page.locator('#calc-suggestions li').first();
     await expect(sugg_roma).toBeVisible({ timeout: 15_000 });

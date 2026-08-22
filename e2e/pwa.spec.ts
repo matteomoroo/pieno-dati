@@ -135,7 +135,7 @@ test.describe('offline', () => {
       timeout: 20_000,
     });
 
-    await page.locator('#calc-place').fill('Milano');
+    await page.locator('#calc-place').pressSequentially('Milano', { delay: 80 });
     const sw_sugg_1 = page.locator('#calc-suggestions li').first();
     await expect(sw_sugg_1).toBeVisible({ timeout: 15_000 });
     await sw_sugg_1.click();
@@ -148,7 +148,7 @@ test.describe('offline', () => {
     // Se l'HTML non è in cache la pagina non si carica: verifichiamo prima che
     // il campo esista, con un margine, invece di fallire secco su fill().
     await expect(page.locator('#calc-place')).toBeVisible({ timeout: 20_000 });
-    await page.locator('#calc-place').fill('Milano');
+    await page.locator('#calc-place').pressSequentially('Milano', { delay: 80 });
     const sw_sugg_2 = page.locator('#calc-suggestions li').first();
     await expect(sw_sugg_2).toBeVisible({ timeout: 15_000 });
     await sw_sugg_2.click();
