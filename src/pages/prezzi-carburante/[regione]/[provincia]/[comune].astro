@@ -13,6 +13,7 @@ import { loadMeta, formatPrice, FUEL_UI_LABELS } from '../../../../lib/data/load
 import { FUEL_DISPLAY_ORDER } from '../../../../lib/data/fuels-ui.ts';
 import { breadcrumbLd } from '../../../../lib/seo/breadcrumb.ts';
 import type { FuelKey } from '../../../../types/pieno.ts';
+import { BASE, HOME } from '../../../../lib/site.ts';
 
 export function getStaticPaths() {
   const paths = [];
@@ -36,7 +37,7 @@ export function getStaticPaths() {
 const { region, prov, comune } = Astro.props;
 const meta = loadMeta();
 const national = meta?.stats;
-const base = import.meta.env.BASE_URL;
+const base = BASE;
 
 const cheapestList = FUEL_DISPLAY_ORDER.filter(
   (f: FuelKey) => comune.cheapest[f],
@@ -44,7 +45,7 @@ const cheapestList = FUEL_DISPLAY_ORDER.filter(
 
 const site = Astro.site?.href.replace(/\/$/, '') ?? '';
 const ld = breadcrumbLd([
-  { name: 'Home', url: `${site}${base}` },
+  { name: 'Home', url: `${site}${HOME}` },
   { name: region.name, url: `${site}${base}/prezzi-carburante/${region.slug}` },
   {
     name: `${prov.fullName} (${prov.name})`,
@@ -64,7 +65,7 @@ const ld = breadcrumbLd([
   structuredData={ld}
 >
   <nav class="breadcrumb" aria-label="Percorso">
-    <a href={base}>Home</a>
+    <a href={HOME}>Home</a>
     <span aria-hidden="true">›</span>
     <a href={`${base}/prezzi-carburante/${region.slug}`}>{region.name}</a>
     <span aria-hidden="true">›</span>

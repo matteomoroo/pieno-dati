@@ -1,0 +1,99 @@
+name: Dati MIMIT e deploy in produzione
+
+# Tre trigger:
+#  - schedule: aggiornamento quotidiano dei prezzi;
+#  - push su main: un fix di codice deve poter raggiungere la produzione subito.
+#    Prima esistevano solo schedule e dispatch, quindi una correzione urgente
+#    restava ferma fino al giorno dopo;
+#  - workflow_dispatch: deploy manuale.
+on:
+  schedule:
+    - cron: '45 6 * * *'
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Un solo deploy in produzione alla volta, senza cancellare quello in corso:
+# interrompere a metà un aggiornamento dati lascerebbe il repository incoerente.
+concurrency:
+  group: pieno-production
+  cancel-in-progress: false
+
+jobs:
+  # Gate di qualità: riusa l'INTERO workflow CI (lint, typecheck, unit test,
+  # build, smoke test E gli E2E Playwright). Se un qualsiasi step fallisce,
+  # questo job fallisce e il deploy, che ne dipende, non parte.
+  # È qui che si realizza il requisito "E2E bloccanti per il deploy": prima
+  # deploy.yml non eseguiva affatto gli E2E e girava in parallelo alla CI.
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  build-and-deploy:
+    needs: ci
+    runs-on: ubuntu-24.04
+    environment: production
+    # Il commit del dataset richiede scrittura: la concediamo solo a questo job,
+    # non all'intero workflow.
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Installazione pulita
+        run: npm ci
+
+      # Aggiornamento dati solo quando ha senso: su push di codice si
+      # ricompila con l'ultimo dataset valido già nel repository.
+      - name: Aggiorna il dataset MIMIT
+        if: github.event_name != 'push'
+        run: npm run data
+
+      - name: Build del sito
+        env:
+          SITE_URL: ${{ vars.SITE_URL || 'https://matteomoroo.github.io' }}
+          BASE_PATH: ${{ vars.BASE_PATH || '/pieno-dati/' }}
+          BUILD_ID: ${{ github.sha }}
+        run: npm run build
+
+      - name: Smoke test
+        env:
+          SITE_URL: ${{ vars.SITE_URL || 'https://matteomoroo.github.io' }}
+          BASE_PATH: ${{ vars.BASE_PATH || '/pieno-dati/' }}
+        run: npm run smoke
+
+      # Il commit dei dati avviene DOPO che l'intera CI, build e smoke test sono
+      # passati: non si registra come "valido" un dataset che non produce un
+      # sito sano.
+      - name: Commit del dataset aggiornato
+        if: github.event_name != 'push'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name  "pieno-bot"
+          git config user.email "pieno-bot@users.noreply.github.com"
+          git add public/data
+          if git diff --cached --quiet; then
+            echo "Nessun cambiamento nei dati, niente commit."
+          else
+            git commit -m "dati: aggiornamento MIMIT $(date -u +%Y-%m-%d) [skip ci]"
+            git push
+          fi
+
+      - name: Deploy su Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # >= 4.34.0 per il limite di 100.000 static asset per versione.
+          wranglerVersion: '4.125.0'
+          command: deploy

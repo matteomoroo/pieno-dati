@@ -16,6 +16,7 @@ import {
   FUEL_UI_LABELS,
 } from '../lib/data/load.ts';
 import { getTerritory } from '../lib/geo/loadTerritory.ts';
+import { BASE } from '../lib/site.ts';
 
 const meta = loadMeta();
 const benzina = meta?.stats?.benzina;
@@ -26,7 +27,7 @@ const extractionDate = meta?.sourceExtractionDate
 
 // Regioni per i link SEO nel footer (Google segue i link per scoprire le pagine).
 const regions = getTerritory();
-const baseUrl = import.meta.env.BASE_URL;
+const baseUrl = BASE;
 ---
 
 <Base

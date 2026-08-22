@@ -1,8 +1,15 @@
 # Pieno — dati
 
-Pipeline giornaliera che scarica gli open data MIMIT (Osservaprezzi Carburanti),
-li pulisce, normalizza e aggrega, e produce file JSON statici serviti da GitHub
-Pages. Alimenta il sito Pieno, che mostra i prezzi dei carburanti in Italia.
+Pieno mostra i prezzi ufficiali dei carburanti di oltre 21.000 distributori
+italiani, aggiornati ogni giorno dagli open data MIMIT (Osservaprezzi
+Carburanti).
+
+Questo repository contiene sia la pipeline dati sia il sito Astro che la
+consuma: circa 22.700 pagine statiche fra homepage, mappa, calcolatore,
+andamento prezzi, pagine territoriali e una pagina per ogni distributore.
+
+**Hosting di produzione:** Cloudflare Workers Static Assets. Vedi
+[`docs/deploy.md`](docs/deploy.md).
 
 ## Cos'è (in breve)
 
@@ -124,3 +131,66 @@ permanenti, self/servito, persistenza storico, validazione, freschezza, report,
 rimozione dei dati hardcoded lato pipeline, CI. La migrazione del frontend ad
 Astro (Fase B in poi) non è ancora iniziata; il vecchio `index.html` resta
 funzionante nel frattempo.
+
+
+## Configurazione dominio e base path
+
+Dominio e base path non sono hardcoded da nessuna parte. Vivono in
+`site.config.mjs` e si controllano con due environment variable:
+
+```bash
+# GitHub Pages / anteprima
+SITE_URL=https://matteomoroo.github.io BASE_PATH=/pieno-dati/ npm run build
+
+# Dominio definitivo alla radice
+SITE_URL=https://tuodominio.it BASE_PATH=/ npm run build
+```
+
+Da queste due variabili derivano canonical, Open Graph, sitemap, `robots.txt`,
+`manifest.webmanifest`, service worker e tutti i link interni. Il passaggio al
+dominio definitivo non richiede di modificare nessun sorgente.
+
+Lo smoke test verifica esplicitamente che con `BASE_PATH=/` non resti nessun
+riferimento a `/pieno-dati` nell'output.
+
+## Comandi
+
+```bash
+npm ci              # installazione pulita
+npm run dev         # sviluppo
+npm run data        # rigenera public/data/ dai CSV MIMIT
+npm run build       # build del sito
+npm run preview     # serve dist/ in locale
+npm run lint        # ESLint
+npm run typecheck   # tsc --noEmit && astro check
+npm test            # unit test
+npm run smoke       # 18 controlli su dist/
+npm run test:e2e    # Playwright (richiede: npx playwright install chromium)
+npm run verify      # lint + typecheck + test + build + smoke
+```
+
+## Struttura dei dati generati
+
+| File | Contenuto |
+|---|---|
+| `public/data/stations.json` | Dataset completo, ~7 MB. Usato dalla mappa. |
+| `public/data/cells/{lat}_{lng}.json` | Partizioni geografiche da 1°, ~35 KB l'una. Usate dal calcolatore per non scaricare il dataset nazionale. |
+| `public/data/cells-index.json` | Elenco delle celle non vuote. |
+| `public/data/search-index.json` | Comuni con coordinate: alimenta la ricerca località, anche quella manuale del calcolatore. |
+| `public/data/meta.json` | Aggregati nazionali, trend, notizie. |
+| `public/data/history.json` | Cronologia persistente delle medie. |
+| `public/data/status.json` | Stato sintetico: data di estrazione, freschezza, numero stazioni. |
+
+## Freschezza dei dati
+
+`status.json` espone `fresh`, `delayed` o `stale`. La UI mostra sempre la data
+reale di rilevazione dei prezzi. Il service worker non aggira questo sistema:
+quando serve dati dalla cache aggiunge l'header `X-Pieno-From-Cache`, e
+l'interfaccia lo dichiara ("stai vedendo una copia salvata").
+
+## Decisioni architetturali
+
+- [0001 — Scelta del framework](docs/decisions/0001-scelta-framework.md)
+- [0002 — Persistenza dello storico](docs/decisions/0002-persistenza-storico.md)
+- [0003 — Rimandare l'upgrade Astro 4 → 7](docs/decisions/0003-upgrade-astro.md)
+- [0004 — Soglia minima per le pagine comunali](docs/decisions/0004-soglia-comuni.md)

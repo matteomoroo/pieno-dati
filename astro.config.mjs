@@ -1,17 +1,15 @@
 import { defineConfig } from 'astro/config';
+import { SITE_URL, BASE_PATH } from './site.config.mjs';
 
 // Configurazione Astro per Pieno.
 //
-// Strategia di migrazione graduale: durante la Fase B il nuovo sito Astro
-// viene costruito in `dist/` e, in fase di deploy, i suoi file vengono messi
-// accanto ai dati generati in `public/data/`. Il vecchio `index.html` resta
-// funzionante finché non lo sostituiamo pagina per pagina.
-//
-// `site` va impostato all'URL pubblico di GitHub Pages: serve a generare
-// canonical, sitemap e Open Graph corretti (Milestone 8 — SEO).
+// `site` e `base` NON sono più hardcoded: arrivano da site.config.mjs, che li
+// legge dalle environment variable SITE_URL / BASE_PATH. Questo permette di
+// compilare la stessa codebase per GitHub Pages (/pieno-dati/) o per il
+// dominio definitivo (/) senza modificare i sorgenti.
 export default defineConfig({
-  site: 'https://matteomoroo.github.io',
-  base: '/pieno-dati',
+  site: SITE_URL,
+  base: BASE_PATH,
   trailingSlash: 'ignore',
   build: {
     // Gli asset con hash nel nome, per caching aggressivo.

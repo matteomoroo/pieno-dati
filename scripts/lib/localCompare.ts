@@ -9,7 +9,6 @@
  * Funzioni pure, indipendenti dal framework, interamente testate.
  */
 
-import type { FuelKey } from '../../src/types/pieno.ts';
 import { median } from './stats.ts';
 import { haversineKm } from './geo.ts';
 

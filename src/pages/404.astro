@@ -1,0 +1,83 @@
+---
+/**
+ * Pagina 404. Con oltre 22.000 URL indicizzati gli errori arriveranno:
+ * meglio riportare l'utente dentro il sito che lasciarlo alla pagina
+ * generica dell'hosting.
+ */
+import Base from '../layouts/Base.astro';
+import { getTerritory } from '../lib/geo/loadTerritory.ts';
+import { BASE, HOME } from '../lib/site.ts';
+
+const base = BASE;
+const regions = getTerritory().slice(0, 8);
+---
+
+<Base
+  title="Pagina non trovata | Pieno"
+  description="La pagina che cerchi non esiste o è stata spostata."
+  canonicalPath="/404"
+  noindex
+>
+  <main class="nf" id="contenuto">
+    <p class="nf-code">404</p>
+    <h1>Questa pagina non c'è</h1>
+    <p class="nf-text">
+      Forse il distributore non è più nei dati MIMIT, oppure l'indirizzo è
+      cambiato. Da qui puoi ripartire.
+    </p>
+
+    <p class="nf-actions">
+      <a class="nf-primary" href={HOME}>Torna alla home</a>
+      <a class="nf-secondary" href={`${base}/calcola-risparmio`}>Calcola il risparmio</a>
+    </p>
+
+    <h2 class="nf-sub">Cerca per regione</h2>
+    <ul class="nf-regions">
+      {regions.map((r) => (
+        <li><a href={`${base}/prezzi-carburante/${r.slug}`}>{r.name}</a></li>
+      ))}
+    </ul>
+  </main>
+</Base>
+
+<style>
+  .nf {
+    max-width: 42rem;
+    margin: 0 auto;
+    padding: var(--space-6, 2rem) var(--space-4, 1rem);
+    text-align: center;
+  }
+  .nf-code {
+    font-family: var(--font-mono, monospace);
+    font-size: 3rem;
+    color: var(--text-muted);
+    margin: 0;
+  }
+  .nf-text { color: var(--text-muted); }
+  .nf-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+    margin: var(--space-5, 1.5rem) 0;
+  }
+  .nf-actions a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 1.1rem;
+    border-radius: 10px;
+    text-decoration: none;
+  }
+  .nf-primary { background: var(--c-ink, #12303a); color: #f7f5f0; }
+  .nf-secondary { border: 1px solid var(--border, #d8d2c6); }
+  .nf-sub { font-size: 1rem; margin-top: var(--space-6, 2rem); }
+  .nf-regions {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    justify-content: center;
+  }
+</style>
