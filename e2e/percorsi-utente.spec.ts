@@ -50,10 +50,10 @@ test.describe('homepage', () => {
 
   test('lo skip link porta al contenuto da tastiera', async ({ page }) => {
     await page.goto('/', { waitUntil: 'load' });
-    // Lo skip link è il primo elemento focalizzabile: portiamo prima il focus
-    // sul body, poi un Tab. Aspettiamo che il focus si sposti davvero, invece
-    // di dare per scontato che sia immediato.
-    await page.locator('body').click({ position: { x: 1, y: 1 } });
+    // Lo skip link è il primo elemento focalizzabile del documento. Portiamo il
+    // focus a inizio pagina agendo sul body (senza cliccarci dentro, che
+    // sposterebbe il focus su un campo), poi un Tab lo raggiunge.
+    await page.evaluate(() => (document.activeElement as HTMLElement)?.blur());
     await page.keyboard.press('Tab');
     const focused = page.locator(':focus');
     await expect(focused).toHaveClass(/skip-link/, { timeout: 10_000 });
@@ -94,13 +94,19 @@ test.describe('ricerca località in homepage', () => {
   test('trova un comune valido', async ({ page }) => {
     await page.goto('/', { waitUntil: 'load' });
     const search = page.locator('#q');
-    await search.fill('Milano');
-    // Aspettiamo il suggerimento reale nella lista dei risultati, non un
-    // qualsiasi "Milano" nella pagina.
-    const suggestion = page.locator('.search-results .search-item', {
-      hasText: /Milano/i,
-    });
-    await expect(suggestion.first()).toBeVisible({ timeout: 15_000 });
+    // Focus prima di digitare: fa partire il precaricamento dell'indice
+    // (l'input ha un listener sul focus che chiama ensureIndex).
+    await search.focus();
+    // pressSequentially simula una digitazione reale, scatenando gli eventi
+    // input su cui è agganciato il debounce della ricerca. `fill` a volte non
+    // li innesca in modo affidabile.
+    await search.pressSequentially('Milano', { delay: 50 });
+    // La lista dei risultati smette di essere hidden quando ci sono match.
+    const list = page.locator('.search-results');
+    await expect(list).toBeVisible({ timeout: 15_000 });
+    await expect(
+      list.locator('.search-item', { hasText: /Milano/i }).first(),
+    ).toBeVisible({ timeout: 15_000 });
   });
 
   test('gestisce una query inesistente senza errori', async ({ page }) => {
@@ -202,13 +208,22 @@ test.describe('calcolatore del risparmio', () => {
     await page.goto('/calcola-risparmio');
     await page.locator('#calc-locate').click();
     // Aspettiamo che la ricerca finisca: lo stato "Sto cercando…" deve sparire.
-    // Poi il messaggio di zona vuota compare in #calc-result o #calc-status.
     await expect(page.locator('#calc-status')).not.toContainText(/cercando/i, {
       timeout: 20_000,
     });
-    await expect(
-      page.locator('#calc-result').or(page.locator('#calc-status')),
-    ).toContainText(/non abbiamo trovato|nessun/i, { timeout: 20_000 });
+    // Il messaggio di zona vuota compare in #calc-result oppure in #calc-status.
+    // Controlliamo il testo combinato dei due, evitando un selettore che
+    // matcha due elementi (che darebbe strict mode violation).
+    await expect
+      .poll(
+        async () => {
+          const result = (await page.locator('#calc-result').textContent()) ?? '';
+          const status = (await page.locator('#calc-status').textContent()) ?? '';
+          return `${result} ${status}`;
+        },
+        { timeout: 20_000 },
+      )
+      .toMatch(/non abbiamo trovato|nessun/i);
   });
 });
 

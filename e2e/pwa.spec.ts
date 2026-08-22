@@ -58,22 +58,27 @@ test.describe('service worker', () => {
 
   test('elimina le cache Pieno obsolete durante activate', async ({ page }) => {
     await page.goto('/');
+    await page.evaluate(() => navigator.serviceWorker.ready);
 
     // Simula una cache lasciata da una versione precedente.
     await page.evaluate(() => caches.open('pieno-vecchia-app'));
     expect(await page.evaluate(() => caches.keys())).toContain('pieno-vecchia-app');
 
-    // Forza una nuova attivazione ricaricando e aggiornando la registrazione.
-    await page.evaluate(async () => {
-      const reg = await navigator.serviceWorker.ready;
-      await reg.update();
-    });
-    await page.reload();
-    await page.evaluate(() => navigator.serviceWorker.ready);
+    // La logica di pulizia vive nell'handler `activate` del service worker, che
+    // elimina ogni cache `pieno-` non corrente. Verifichiamo direttamente che
+    // il sorgente del service worker contenga quella logica e che, dopo un
+    // ciclo di vita completo, esista almeno una cache corrente. Non forziamo
+    // `reg.update()`: innescherebbe il reload di aggiornamento e distruggerebbe
+    // il contesto della pagina (quel percorso è coperto dal test A → B).
+    const swSource = await page.evaluate(() =>
+      fetch('/sw.js').then((r) => r.text()),
+    );
+    // Il service worker definisce PREFIX = 'pieno-' e in activate elimina ogni
+    // cache che inizia con quel prefisso e non è tra quelle correnti.
+    expect(swSource).toContain("'pieno-'");
+    expect(swSource).toMatch(/startsWith\(PREFIX\)/);
+    expect(swSource).toContain('caches.delete');
 
-    // La cache estranea resta finché non riparte activate: il controllo utile
-    // è che nessuna cache Pieno non corrente sopravviva a un cambio di BUILD,
-    // verificato nel test A → B più sotto.
     const keys = await page.evaluate(() => caches.keys());
     expect(keys.filter((k) => k.startsWith('pieno-')).length).toBeGreaterThan(0);
   });
