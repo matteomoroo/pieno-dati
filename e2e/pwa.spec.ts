@@ -58,6 +58,7 @@ test.describe('service worker', () => {
 
   test('elimina le cache Pieno obsolete durante activate', async ({ page }) => {
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
     await page.evaluate(() => navigator.serviceWorker.ready);
 
     // Simula una cache lasciata da una versione precedente.

@@ -187,9 +187,15 @@ const ogImage = `${origin}${withBase('/og/og-default.png')}`;
               });
             });
 
+            // Ricarichiamo solo quando il controller cambia DOPO che ce n'era
+            // già uno: è un aggiornamento reale da versione A a B. Alla primissima
+            // visita `controller` è null finché il service worker non prende il
+            // controllo; ricaricare in quel caso sarebbe un reload spurio, fastidioso
+            // per l'utente e capace di interrompere interazioni in corso.
             let reloading = false;
+            const hadController = Boolean(navigator.serviceWorker.controller);
             navigator.serviceWorker.addEventListener('controllerchange', () => {
-              if (reloading) return;
+              if (reloading || !hadController) return;
               reloading = true;
               window.location.reload();
             });
