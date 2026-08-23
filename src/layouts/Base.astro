@@ -1,6 +1,6 @@
 ---
 /**
- * Layout base di Pieno.
+ * Layout base di BenzaGo.
  * Gestisce <head>, SEO, font, service worker e wrappa il contenuto.
  *
  * Modifiche di questo sprint:
@@ -56,7 +56,7 @@ const ogImage = `${origin}${withBase('/og/og-default.png')}`;
 
     <!-- Open Graph / social -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Pieno" />
+    <meta property="og:site_name" content="BenzaGo" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
@@ -66,7 +66,7 @@ const ogImage = `${origin}${withBase('/og/og-default.png')}`;
     <meta property="og:image:height" content="630" />
     <meta
       property="og:image:alt"
-      content="Pieno — prezzi carburante in tutta Italia, dati ufficiali MIMIT"
+      content="BenzaGo — prezzi carburante in tutta Italia, dati ufficiali MIMIT"
     />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
@@ -79,7 +79,7 @@ const ogImage = `${origin}${withBase('/og/og-default.png')}`;
     <link rel="manifest" href={withBase('/manifest.webmanifest')} />
     <link rel="apple-touch-icon" href={withBase('/icons/apple-touch-icon.png')} />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="Pieno" />
+    <meta name="apple-mobile-web-app-title" content="BenzaGo" />
     {
       structuredData && (
         <script
@@ -94,7 +94,7 @@ const ogImage = `${origin}${withBase('/og/og-default.png')}`;
     <slot />
 
     <div id="sw-update" class="sw-update" hidden role="status">
-      <span>È disponibile una versione aggiornata di Pieno.</span>
+      <span>È disponibile una versione aggiornata di BenzaGo.</span>
       <button type="button" id="sw-update-btn">Aggiorna</button>
     </div>
 

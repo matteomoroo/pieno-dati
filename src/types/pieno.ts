@@ -1,5 +1,5 @@
 /**
- * Pieno — tipi condivisi tra pipeline dati e frontend.
+ * BenzaGo — tipi condivisi tra pipeline dati e frontend.
  *
  * Questo file è la SINGLE SOURCE OF TRUTH per la forma dei dati.
  * Sia gli script Node in scripts/ sia il futuro frontend Astro importano

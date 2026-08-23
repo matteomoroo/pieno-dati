@@ -1,4 +1,4 @@
-# Deploy di Pieno
+# Deploy di BenzaGo
 
 ## Architettura
 
@@ -6,7 +6,7 @@
 GitHub  →  GitHub Actions  →  astro build  →  dist/  →  Cloudflare Workers Static Assets  →  dominio
 ```
 
-Pieno è interamente statico. `wrangler.jsonc` non dichiara nessun `main`,
+BenzaGo è interamente statico. `wrangler.jsonc` non dichiara nessun `main`,
 quindi nessun codice Worker viene eseguito: le richieste sono servite
 direttamente dagli asset.
 

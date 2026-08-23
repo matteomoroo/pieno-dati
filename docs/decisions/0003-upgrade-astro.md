@@ -17,10 +17,10 @@ più usata da quando la sitemap è generata a mano.
 
 ## Vulnerabilità residue e perché sono accettabili qui
 
-| Pacchetto | Severità | Perché non sfruttabile in Pieno |
+| Pacchetto | Severità | Perché non sfruttabile in BenzaGo |
 |---|---|---|
 | `vitest` (UI server) | critica | La UI di Vitest non viene mai avviata: i test girano con `vitest run`. Dipendenza di sviluppo, assente in produzione. |
-| `astro` (`X-Forwarded-Host` riflesso) | alta | Riguarda l'SSR. Pieno è compilato staticamente e servito da Cloudflare: nessun server Astro in esecuzione. |
+| `astro` (`X-Forwarded-Host` riflesso) | alta | Riguarda l'SSR. BenzaGo è compilato staticamente e servito da Cloudflare: nessun server Astro in esecuzione. |
 | `vite` (path traversal in `.map`) | alta | Riguarda il dev server. Non esposto: in produzione ci sono solo file statici. |
 | `sharp` / libvips | alta | Usato solo a build time, su un'unica immagine SVG che scriviamo noi. Nessun input utente lo raggiunge. |
 | `esbuild` (dev server) | moderata | Come sopra: solo sviluppo. |

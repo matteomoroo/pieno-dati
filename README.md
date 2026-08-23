@@ -1,6 +1,6 @@
-# Pieno — dati
+# BenzaGo — dati
 
-Pieno mostra i prezzi ufficiali dei carburanti di oltre 21.000 distributori
+BenzaGo mostra i prezzi ufficiali dei carburanti di oltre 21.000 distributori
 italiani, aggiornati ogni giorno dagli open data MIMIT (Osservaprezzi
 Carburanti).
 
@@ -185,7 +185,7 @@ npm run verify      # lint + typecheck + test + build + smoke
 
 `status.json` espone `fresh`, `delayed` o `stale`. La UI mostra sempre la data
 reale di rilevazione dei prezzi. Il service worker non aggira questo sistema:
-quando serve dati dalla cache aggiunge l'header `X-Pieno-From-Cache`, e
+quando serve dati dalla cache aggiunge l'header `X-BenzaGo-From-Cache`, e
 l'interfaccia lo dichiara ("stai vedendo una copia salvata").
 
 ## Decisioni architetturali

@@ -9,8 +9,8 @@ import { BASE_PREFIX } from '../../site.config.mjs';
 export const GET: APIRoute = () => {
   const base = BASE_PREFIX;
   const manifest = {
-    name: 'Pieno — Prezzi carburante in Italia',
-    short_name: 'Pieno',
+    name: 'BenzaGo — Prezzi carburante in Italia',
+    short_name: 'BenzaGo',
     description:
       'Prezzi ufficiali dei carburanti dei distributori in Italia, aggiornati ogni giorno.',
     start_url: `${base}/`,

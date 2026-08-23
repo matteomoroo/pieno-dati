@@ -165,7 +165,7 @@ export function createCellLoader(base: string) {
             'Non riesco a caricare i prezzi di questa zona. Riprova tra poco.',
           );
         }
-        if (res.headers.get('X-Pieno-From-Cache') === '1') fromCache = true;
+        if (res.headers.get('X-BenzaGo-From-Cache') === '1') fromCache = true;
 
         const file = (await res.json()) as CellFile;
         cellCache.set(key, file);

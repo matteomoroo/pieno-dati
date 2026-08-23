@@ -5,7 +5,7 @@ Stato: accettata (conferma di una scelta preesistente)
 
 ## Contesto
 
-Durante l'audit pre-lancio è emerso che Pieno pubblica 1.068 pagine comunali
+Durante l'audit pre-lancio è emerso che BenzaGo pubblica 1.068 pagine comunali
 mentre i dati contengono 5.265 comuni. Andava chiarito se fosse una scelta o
 una perdita di dati.
 

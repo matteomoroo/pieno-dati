@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
 /**
- * Percorsi utente principali di Pieno.
+ * Percorsi utente principali di BenzaGo.
  *
  * Ogni test parte da uno stato pulito (contesto nuovo per ogni file), come un
  * visitatore che non ha mai aperto il sito.
@@ -22,7 +22,7 @@ test.describe('homepage', () => {
     const errors = collectConsoleErrors(page);
 
     await page.goto('/');
-    await expect(page).toHaveTitle(/Pieno/i);
+    await expect(page).toHaveTitle(/BenzaGo/i);
     await expect(page.locator('h1')).toBeVisible();
 
     // La freschezza del dataset deve essere sempre dichiarata.

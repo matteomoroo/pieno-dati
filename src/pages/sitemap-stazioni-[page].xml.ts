@@ -1,6 +1,6 @@
 /**
  * Sitemap delle pagine stazione, partizionate in blocchi da URLS_PER_SITEMAP.
- * Sono la parte più grande e più preziosa dell'indice di Pieno.
+ * Sono la parte più grande e più preziosa dell'indice di BenzaGo.
  */
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { loadStations } from '../lib/data/load.ts';

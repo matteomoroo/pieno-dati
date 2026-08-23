@@ -56,13 +56,13 @@ test.describe('service worker', () => {
       .toBe(true);
   });
 
-  test('elimina le cache Pieno obsolete durante activate', async ({ page }) => {
+  test('elimina le cache BenzaGo obsolete durante activate', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => navigator.serviceWorker.ready);
 
     // Simula una cache lasciata da una versione precedente.
-    await page.evaluate(() => caches.open('pieno-vecchia-app'));
-    expect(await page.evaluate(() => caches.keys())).toContain('pieno-vecchia-app');
+    await page.evaluate(() => caches.open('benzago-vecchia-app'));
+    expect(await page.evaluate(() => caches.keys())).toContain('benzago-vecchia-app');
 
     // La logica di pulizia vive nell'handler `activate` del service worker, che
     // elimina ogni cache `pieno-` non corrente. Verifichiamo direttamente che
@@ -75,12 +75,12 @@ test.describe('service worker', () => {
     );
     // Il service worker definisce PREFIX = 'pieno-' e in activate elimina ogni
     // cache che inizia con quel prefisso e non è tra quelle correnti.
-    expect(swSource).toContain("'pieno-'");
+    expect(swSource).toContain("'benzago-'");
     expect(swSource).toMatch(/startsWith\(PREFIX\)/);
     expect(swSource).toContain('caches.delete');
 
     const keys = await page.evaluate(() => caches.keys());
-    expect(keys.filter((k) => k.startsWith('pieno-')).length).toBeGreaterThan(0);
+    expect(keys.filter((k) => k.startsWith('benzago-')).length).toBeGreaterThan(0);
   });
 
   test('non serve HTML stantio: la navigazione passa dalla rete', async ({ page }) => {
@@ -138,7 +138,7 @@ test.describe('offline', () => {
     // JS, CSS e dati passano da lui e finiscono in cache. È il comportamento
     // standard delle PWA: la copertura offline si completa dalla seconda
     // apertura. Questo test verifica la promessa reale del prodotto — chi ha
-    // già usato Pieno, offline vede la copia salvata con la sua data — non il
+    // già usato BenzaGo, offline vede la copia salvata con la sua data — non il
     // caso limite "installo e vado offline senza aver mai ricaricato".
     await page.reload();
     await expect(page.locator('#calc-place')).toBeVisible({ timeout: 20_000 });
@@ -210,7 +210,7 @@ test.describe('aggiornamento della versione (A → B)', () => {
     await page.evaluate(() => navigator.serviceWorker.ready);
 
     const cacheA = await page.evaluate(() =>
-      caches.keys().then((k) => k.filter((n) => n.startsWith('pieno-'))),
+      caches.keys().then((k) => k.filter((n) => n.startsWith('benzago-'))),
     );
     expect(cacheA.length).toBeGreaterThan(0);
 
@@ -244,7 +244,7 @@ test.describe('aggiornamento della versione (A → B)', () => {
     await page.evaluate(() => navigator.serviceWorker.ready);
 
     const cacheB = await page.evaluate(() =>
-      caches.keys().then((k) => k.filter((n) => n.startsWith('pieno-'))),
+      caches.keys().then((k) => k.filter((n) => n.startsWith('benzago-'))),
     );
 
     const aggiornato =

@@ -62,7 +62,7 @@ jobs:
 
       - name: Smoke test build root
         env:
-          SITE_URL: https://pieno.example
+          SITE_URL: https://benzago.example
           BASE_PATH: /
         run: npm run smoke
 

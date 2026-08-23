@@ -1,7 +1,7 @@
 import { defineConfig } from 'astro/config';
 import { SITE_URL, BASE_PATH } from './site.config.mjs';
 
-// Configurazione Astro per Pieno.
+// Configurazione Astro per BenzaGo.
 //
 // `site` e `base` NON sono più hardcoded: arrivano da site.config.mjs, che li
 // legge dalle environment variable SITE_URL / BASE_PATH. Questo permette di

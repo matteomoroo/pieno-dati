@@ -1,5 +1,5 @@
 /**
- * Configurazione ESLint di Pieno.
+ * Configurazione ESLint di BenzaGo.
  * Volutamente essenziale: serve a intercettare errori reali (variabili non
  * usate, promise non gestite, `any` impliciti), non a imporre uno stile.
  */

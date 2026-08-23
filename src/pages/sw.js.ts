@@ -1,5 +1,5 @@
 /**
- * Service worker di Pieno, generato a build time.
+ * Service worker di BenzaGo, generato a build time.
  *
  * Era un file statico in `public/sw.js` con `VERSION = 'pieno-v1'` fisso e
  * `BASE = '/pieno-dati'` hardcoded: la cache non veniva mai invalidata e al
@@ -23,7 +23,7 @@ export const GET: APIRoute = () => {
 
 function serviceWorkerSource(base: string, buildId: string): string {
   return `/*
- * Service worker di Pieno — generato automaticamente, non modificare a mano.
+ * Service worker di BenzaGo — generato automaticamente, non modificare a mano.
  * Sorgente: src/pages/sw.js.ts
  *
  * Strategie:
@@ -37,7 +37,11 @@ function serviceWorkerSource(base: string, buildId: string): string {
 
 const BUILD = '${buildId}';
 const BASE = '${base}';
-const PREFIX = 'pieno-';
+const PREFIX = 'benzago-';
+// Prefisso storico: il sito si chiamava Pieno. Va ancora riconosciuto
+// per ripulire le cache lasciate sui dispositivi di chi ha usato le
+// versioni precedenti, altrimenti resterebbero lì per sempre.
+const LEGACY_PREFIX = 'pieno-';
 const APP_CACHE = PREFIX + BUILD + '-app';
 const DATA_CACHE = PREFIX + BUILD + '-data';
 const CURRENT = [APP_CACHE, DATA_CACHE];
@@ -79,7 +83,11 @@ self.addEventListener('activate', (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((k) => k.startsWith(PREFIX) && !CURRENT.includes(k))
+            .filter(
+              (k) =>
+                (k.startsWith(PREFIX) || k.startsWith(LEGACY_PREFIX)) &&
+                !CURRENT.includes(k),
+            )
             .map((k) => caches.delete(k)),
         ),
       )
@@ -96,7 +104,7 @@ self.addEventListener('message', (event) => {
 function markCached(response) {
   if (!response) return response;
   const headers = new Headers(response.headers);
-  headers.set('X-Pieno-From-Cache', '1');
+  headers.set('X-BenzaGo-From-Cache', '1');
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,

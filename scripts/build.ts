@@ -1,5 +1,5 @@
 /**
- * Pieno — orchestratore della pipeline (schema v2).
+ * BenzaGo — orchestratore della pipeline (schema v2).
  *
  * Responsabilità di QUESTO file: solo I/O e sequenza.
  *   1. scarica i due CSV MIMIT;
@@ -100,7 +100,7 @@ function loadHistory(): HistoryPoint[] {
 async function main(): Promise<void> {
   const startedAt = Date.now();
   const generatedAt = new Date().toISOString();
-  console.log('▶️  Pieno ingest v2 — avvio');
+  console.log('▶️  BenzaGo ingest v2 — avvio');
 
   // 1. download
   const { anag, prez } = await loadCsvText();

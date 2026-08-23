@@ -184,7 +184,10 @@ const checks: Check[] = [
     name: 'service worker',
     run: () => {
       const sw = read(mustExist('sw.js'));
-      assert(!/pieno-v1['"]/.test(sw), 'versione cache non aggiornata (pieno-v1)');
+      assert(
+        !/(pieno|benzago)-v1['"]/.test(sw),
+        'versione cache fissa invece che legata alla build',
+      );
       assert(/const BUILD = '[^']+'/.test(sw), 'BUILD non iniettato nel service worker');
       const base = sw.match(/const BASE = '([^']*)'/)?.[1];
       assert(

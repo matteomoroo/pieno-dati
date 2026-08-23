@@ -12,7 +12,7 @@
     "data": "node --experimental-strip-types scripts/build.ts",
     "build": "astro build",
     "build:preview": "SITE_URL=https://matteomoroo.github.io BASE_PATH=/pieno-dati/ astro build",
-    "build:root": "SITE_URL=https://pieno.example BASE_PATH=/ astro build",
+    "build:root": "SITE_URL=https://benzago.example BASE_PATH=/ astro build",
     "preview": "astro preview",
     "lint": "eslint .",
     "typecheck": "astro sync && tsc --noEmit && astro check",

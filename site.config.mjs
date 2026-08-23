@@ -1,5 +1,5 @@
 /**
- * Configurazione centrale di Pieno.
+ * Configurazione centrale di BenzaGo.
  *
  * Unica fonte di verità per dominio e base path. Letta da `astro.config.mjs`,
  * dagli endpoint generati (manifest, robots, service worker, sitemap) e dagli
