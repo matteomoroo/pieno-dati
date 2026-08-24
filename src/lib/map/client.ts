@@ -135,7 +135,7 @@ export async function initMap({ dataUrl, initialFuel }: InitOptions): Promise<vo
     };
   }
 
-  map.on('load', () => {
+  const setupStationsLayer = () => {
     try {
       map.addSource('stations', {
         type: 'geojson',
@@ -214,7 +214,13 @@ export async function initMap({ dataUrl, initialFuel }: InitOptions): Promise<vo
     } catch (err) {
       console.error('[pieno] errore nel disegnare i punti:', err);
     }
-  });
+  };
+
+  if (map.isStyleLoaded()) {
+    setupStationsLayer();
+  } else {
+    map.once('load', setupStationsLayer);
+  }
 
   const locate = document.getElementById('locate');
   if (locate) {
