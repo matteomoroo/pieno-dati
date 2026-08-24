@@ -12,6 +12,7 @@ import {
   loadMeta,
   formatPrice,
   formatDate,
+  freshnessLabel,
   FUEL_DISPLAY_ORDER,
   FUEL_UI_LABELS,
 } from '../lib/data/load.ts';
@@ -26,6 +27,9 @@ const extractionDate = meta?.sourceExtractionDate
   : '';
 
 // Regioni per i link SEO nel footer (Google segue i link per scoprire le pagine).
+// Stato di freschezza del dataset: va comunicato sempre, e quando i dati non
+// sono recenti l'avviso deve essere esplicito.
+const freshnessStatus = meta?.freshness?.status ?? 'unknown';
 const regions = getTerritory();
 const baseUrl = BASE;
 ---
@@ -143,10 +147,37 @@ const baseUrl = BASE;
       prezzo di ciascun distributore risale all'ultima comunicazione del
       gestore.{extractionDate && ` Ultimo dato: ${extractionDate}.`}
     </p>
+    <p class={`freshness freshness-${freshnessStatus}`} role="status">
+      {freshnessLabel(freshnessStatus)}{
+        freshnessStatus !== 'fresh' &&
+          ': i prezzi mostrati potrebbero non essere aggiornati.'
+      }
+    </p>
   </footer>
 </Base>
 
 <style>
+  .freshness {
+    margin-top: var(--space-2);
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+  }
+  .freshness-delayed,
+  .freshness-stale,
+  .freshness-unknown {
+    font-weight: 600;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+  }
+  .freshness-delayed {
+    color: #7a4d06;
+    background: #fdf1dc;
+  }
+  .freshness-stale,
+  .freshness-unknown {
+    color: #7a2318;
+    background: #fbe3df;
+  }
   .hero {
     background: var(--brand);
     padding: var(--space-5) var(--space-5) var(--space-6);

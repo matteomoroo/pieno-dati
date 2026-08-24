@@ -213,6 +213,11 @@ test.describe('aggiornamento della versione (A → B)', () => {
     page,
     context,
   }) => {
+    // Questo test attende due cicli completi di installazione del service
+    // worker, ciascuno con il precache di sette risorse: serve più tempo del
+    // limite predefinito di 30 secondi.
+    test.setTimeout(120_000);
+
     // 1. Visita la versione A e lascia che il service worker si installi.
     await page.goto('/');
     await page.evaluate(() => navigator.serviceWorker.ready);
@@ -248,13 +253,26 @@ test.describe('aggiornamento della versione (A → B)', () => {
     await page.evaluate(() => navigator.serviceWorker.ready);
 
     // 4. La versione nuova deve essere subentrata da sola.
+    //    Tempi generosi: l'install precarica sette risorse, fra cui l'indice
+    //    delle località (circa 500 KB), e su un runner di CI non è immediato.
+    //    Un secondo update dentro il poll copre il caso in cui il primo sia
+    //    partito prima che l'intercettazione di sw.js fosse attiva.
     await expect
       .poll(
-        async () =>
-          page.evaluate(() =>
+        async () => {
+          const found = await page.evaluate(() =>
             caches.keys().then((k) => k.some((n) => n.includes('versione-b'))),
-          ),
-        { timeout: 20_000 },
+          );
+          if (found) return true;
+          await page
+            .evaluate(async () => {
+              const reg = await navigator.serviceWorker.getRegistration();
+              await reg?.update();
+            })
+            .catch(() => {});
+          return false;
+        },
+        { timeout: 60_000, intervals: [1000, 2000, 3000] },
       )
       .toBe(true);
 

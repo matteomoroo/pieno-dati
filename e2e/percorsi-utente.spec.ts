@@ -25,8 +25,17 @@ test.describe('homepage', () => {
     await expect(page).toHaveTitle(/BenzaGo/i);
     await expect(page.locator('h1')).toBeVisible();
 
-    // La freschezza del dataset deve essere sempre dichiarata.
-    await expect(page.getByText(/aggiorna|rilevat|dati del/i).first()).toBeVisible();
+    // La freschezza del dataset deve essere sempre dichiarata, qualunque sia
+    // lo stato. Le etichette possibili sono definite in freshnessLabel():
+    // "Dati aggiornati" / "Dati di due giorni fa" / "Dati non recenti".
+    // Un pattern che coprisse solo lo stato "fresh" farebbe fallire il test
+    // nei giorni in cui MIMIT pubblica in ritardo, pur essendo il sito corretto.
+    await expect(
+      page.getByText(/dati (aggiornati|di due giorni fa|non recenti)/i).first(),
+    ).toBeVisible();
+
+    // E la data dell'ultimo dato disponibile deve comparire.
+    await expect(page.getByText(/ultimo dato/i).first()).toBeVisible();
 
     // I 404 di risorse non essenziali (favicon e simili) non sono errori JS.
     const jsErrors = errors.filter((e) => !/Failed to load resource/i.test(e));
