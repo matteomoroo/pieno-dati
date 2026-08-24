@@ -60,12 +60,17 @@ test.describe('service worker', () => {
     await page.goto('/');
     await page.evaluate(() => navigator.serviceWorker.ready);
 
-    // Simula una cache lasciata da una versione precedente.
+    // Simula cache lasciate da versioni precedenti, incluso il prefisso
+    // storico 'pieno-' di quando il sito si chiamava così: vanno riconosciute
+    // ed eliminate, altrimenti resterebbero per sempre sui dispositivi.
     await page.evaluate(() => caches.open('benzago-vecchia-app'));
-    expect(await page.evaluate(() => caches.keys())).toContain('benzago-vecchia-app');
+    await page.evaluate(() => caches.open('pieno-20260101-app'));
+    const before = await page.evaluate(() => caches.keys());
+    expect(before).toContain('benzago-vecchia-app');
+    expect(before).toContain('pieno-20260101-app');
 
     // La logica di pulizia vive nell'handler `activate` del service worker, che
-    // elimina ogni cache `pieno-` non corrente. Verifichiamo direttamente che
+    // elimina ogni cache `benzago-` non corrente. Verifichiamo direttamente che
     // il sorgente del service worker contenga quella logica e che, dopo un
     // ciclo di vita completo, esista almeno una cache corrente. Non forziamo
     // `reg.update()`: innescherebbe il reload di aggiornamento e distruggerebbe
@@ -73,9 +78,12 @@ test.describe('service worker', () => {
     const swSource = await page.evaluate(() =>
       fetch('/sw.js').then((r) => r.text()),
     );
-    // Il service worker definisce PREFIX = 'pieno-' e in activate elimina ogni
+    // Il service worker definisce PREFIX = 'benzago-' e in activate elimina ogni
     // cache che inizia con quel prefisso e non è tra quelle correnti.
     expect(swSource).toContain("'benzago-'");
+    // Il service worker deve riconoscere anche il prefisso storico.
+    expect(swSource).toContain("'pieno-'");
+    expect(swSource).toMatch(/startsWith\(LEGACY_PREFIX\)/);
     expect(swSource).toMatch(/startsWith\(PREFIX\)/);
     expect(swSource).toContain('caches.delete');
 
@@ -230,33 +238,30 @@ test.describe('aggiornamento della versione (A → B)', () => {
       });
     });
 
-    // 3. L'utente riapre il sito.
+    // 3. L'utente riapre il sito: il service worker nuovo si installa e si
+    //    attiva da solo, senza chiedere niente e senza banner.
     await page.evaluate(async () => {
       const reg = await navigator.serviceWorker.ready;
       await reg.update();
     });
-
-    // 4. Il banner di aggiornamento compare, oppure il nuovo worker prende
-    //    direttamente il controllo. In entrambi i casi non serve alcun
-    //    intervento manuale sulla cache.
-    const banner = page.locator('#sw-update');
     await page.reload();
     await page.evaluate(() => navigator.serviceWorker.ready);
 
+    // 4. La versione nuova deve essere subentrata da sola.
+    await expect
+      .poll(
+        async () =>
+          page.evaluate(() =>
+            caches.keys().then((k) => k.some((n) => n.includes('versione-b'))),
+          ),
+        { timeout: 20_000 },
+      )
+      .toBe(true);
+
+    // Le cache della versione A non devono accumularsi all'infinito.
     const cacheB = await page.evaluate(() =>
       caches.keys().then((k) => k.filter((n) => n.startsWith('benzago-'))),
     );
-
-    const aggiornato =
-      cacheB.some((n) => n.includes('versione-b')) || (await banner.isVisible());
-    expect(
-      aggiornato,
-      'la versione nuova non è stata né installata né segnalata',
-    ).toBe(true);
-
-    // Le cache della versione A non devono accumularsi all'infinito.
-    if (cacheB.some((n) => n.includes('versione-b'))) {
-      expect(cacheB.some((n) => cacheA.includes(n))).toBe(false);
-    }
+    expect(cacheB.some((n) => cacheA.includes(n))).toBe(false);
   });
 });

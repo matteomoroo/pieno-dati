@@ -75,6 +75,10 @@ const ogImage = `${origin}${withBase('/og/og-default.png')}`;
 
     <meta name="theme-color" content="#12303a" />
 
+    <!-- Favicon -->
+    <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+    <link rel="icon" href={withBase('/favicon-32.png')} sizes="32x32" type="image/png" />
+
     <!-- PWA -->
     <link rel="manifest" href={withBase('/manifest.webmanifest')} />
     <link rel="apple-touch-icon" href={withBase('/icons/apple-touch-icon.png')} />
@@ -93,11 +97,6 @@ const ogImage = `${origin}${withBase('/og/og-default.png')}`;
     <a class="skip-link" href="#contenuto">Vai al contenuto</a>
     <slot />
 
-    <div id="sw-update" class="sw-update" hidden role="status">
-      <span>È disponibile una versione aggiornata di BenzaGo.</span>
-      <button type="button" id="sw-update-btn">Aggiorna</button>
-    </div>
-
     <style>
       .skip-link {
         position: absolute;
@@ -112,33 +111,6 @@ const ogImage = `${origin}${withBase('/og/og-default.png')}`;
       .skip-link:focus {
         left: 0;
       }
-      .sw-update {
-        position: fixed;
-        left: 50%;
-        bottom: 1rem;
-        transform: translateX(-50%);
-        z-index: 999;
-        display: flex;
-        gap: 0.75rem;
-        align-items: center;
-        max-width: calc(100vw - 2rem);
-        padding: 0.75rem 1rem;
-        border-radius: 12px;
-        background: var(--c-ink, #12303a);
-        color: #f7f5f0;
-        font-size: 0.9rem;
-        box-shadow: 0 6px 24px rgb(0 0 0 / 25%);
-      }
-      .sw-update button {
-        min-height: 44px;
-        padding: 0 1rem;
-        border: 0;
-        border-radius: 8px;
-        background: #e8b447;
-        color: #12303a;
-        font-weight: 600;
-        cursor: pointer;
-      }
       @media (prefers-reduced-motion: reduce) {
         *,
         *::before,
@@ -152,57 +124,18 @@ const ogImage = `${origin}${withBase('/og/og-default.png')}`;
     <script>
       import { withBase } from '../lib/site.ts';
 
+      // Registrazione del service worker.
+      //
+      // Nessun banner e nessun ricaricamento forzato: online l'HTML arriva
+      // sempre dalla rete (strategia network-first), quindi ogni pagina che
+      // l'utente apre è già l'ultima versione, con i suoi asset nuovi. Il
+      // service worker aggiornato si attiva in silenzio e serve solo da rete
+      // di sicurezza quando la connessione manca.
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', async () => {
-          try {
-            const reg = await navigator.serviceWorker.register(withBase('/sw.js'));
-
-            const banner = document.getElementById('sw-update');
-            const button = document.getElementById(
-              'sw-update-btn',
-            ) as HTMLButtonElement | null;
-
-            const offerUpdate = (worker: ServiceWorker | null): void => {
-              if (!worker || !banner || !button) return;
-              banner.hidden = false;
-              button.onclick = () => {
-                worker.postMessage({ type: 'SKIP_WAITING' });
-              };
-            };
-
-            if (reg.waiting) offerUpdate(reg.waiting);
-
-            reg.addEventListener('updatefound', () => {
-              const installing = reg.installing;
-              if (!installing) return;
-              installing.addEventListener('statechange', () => {
-                // Una versione nuova è pronta e c'era già un controller:
-                // significa che l'utente sta guardando la versione vecchia.
-                if (
-                  installing.state === 'installed' &&
-                  navigator.serviceWorker.controller
-                ) {
-                  offerUpdate(reg.waiting);
-                }
-              });
-            });
-
-            // Ricarichiamo solo quando il controller cambia DOPO che ce n'era
-            // già uno: è un aggiornamento reale da versione A a B. Alla primissima
-            // visita `controller` è null finché il service worker non prende il
-            // controllo; ricaricare in quel caso sarebbe un reload spurio, fastidioso
-            // per l'utente e capace di interrompere interazioni in corso.
-            let reloading = false;
-            const hadController = Boolean(navigator.serviceWorker.controller);
-
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-              if (reloading || !hadController) return;
-              reloading = true;
-              window.location.reload();
-            });
-          } catch {
-            // Il sito funziona anche senza service worker: non disturbiamo l'utente.
-          }
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register(withBase('/sw.js')).catch(() => {
+            // Il sito funziona anche senza service worker: nessun avviso.
+          });
         });
       }
     </script>
