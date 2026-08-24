@@ -188,6 +188,53 @@ reale di rilevazione dei prezzi. Il service worker non aggira questo sistema:
 quando serve dati dalla cache aggiunge l'header `X-BenzaGo-From-Cache`, e
 l'interfaccia lo dichiara ("stai vedendo una copia salvata").
 
+
+## Aggiornamenti e comportamento offline
+
+BenzaGo è installabile come PWA. La regola è semplice:
+
+**Con connessione si vede sempre l'ultima versione.** L'HTML è servito
+network-first, quindi ogni pagina aperta arriva fresca dal server e carica i
+suoi asset nuovi (i nomi cambiano a ogni build). Non c'è nessun banner
+"aggiorna" e nessun ricaricamento a sorpresa: il service worker aggiornato si
+attiva in silenzio e non cambia ciò che l'utente vede.
+
+**Senza connessione si usa la copia salvata**, sempre accompagnata dalla data
+reale di rilevazione dei prezzi e dall'indicazione esplicita che si tratta di
+una copia. BenzaGo non fa mai sembrare aggiornati dei dati che non lo sono.
+
+**Al ritorno online si riparte dalla rete**, quindi l'aggiornamento è
+automatico senza che l'utente debba fare nulla.
+
+### Verifica dell'aggiornamento
+
+Che l'utente riceva sempre la versione nuova è garantito da tre meccanismi,
+ciascuno coperto da un test automatico: cache versionata sulla build, pulizia
+delle cache non correnti in `activate` (incluso il prefisso storico `pieno-`),
+e HTML servito network-first.
+
+La prova end-to-end di un aggiornamento **realmente pubblicato** resta manuale
+(è nella checklist su dispositivo): le richieste con cui il browser aggiorna un
+service worker non sono intercettabili in modo affidabile da Playwright, e un
+test costruito su quella simulazione fallirebbe per motivi propri invece che
+per un difetto del prodotto.
+
+### Cosa è disponibile offline
+
+In precache dopo l'installazione: home, calcolatore, andamento prezzi,
+manifest, pagina offline, indice delle località e stato del dataset.
+
+| Situazione | Comportamento offline |
+|---|---|
+| Prima visita, poi subito offline | La pagina si apre ma può risultare priva di interattività |
+| Dalla seconda visita in poi | Tutto funziona: pagine, ricerca località, prezzi salvati |
+
+Gli asset con hash (JS e CSS) entrano in cache quando la richiesta passa dal
+service worker, cosa che non avviene alla primissima navigazione perché in quel
+momento si sta ancora installando. È il comportamento standard delle PWA:
+coprire anche il primo caso richiederebbe di precaricare asset il cui nome è
+noto solo a build conclusa.
+
 ## Decisioni architetturali
 
 - [0001 — Scelta del framework](docs/decisions/0001-scelta-framework.md)
