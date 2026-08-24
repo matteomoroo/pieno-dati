@@ -1,0 +1,193 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index eee2a3b..6b1f4b7 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -1,12 +1,15 @@
+ name: CI
+ 
+-# Gira su ogni push e su ogni pull request. Nessun deploy: serve solo a dire
+-# se il codice è sano. Il deploy vive in deploy.yml e riesegue la stessa
+-# catena prima di pubblicare.
++# Gira su ogni push e su ogni pull request. Nessun deploy: dice solo se il
++# codice è sano. Il deploy (deploy.yml) richiama questo stesso workflow e non
++# pubblica finché verify ed e2e non sono verdi.
+ on:
+   push:
+     branches: [main]
+   pull_request:
++  # Permette a deploy.yml di riusare esattamente questa catena invece di
++  # duplicarla: un solo punto di verità per "cosa significa build sana".
++  workflow_call:
+ 
+ permissions:
+   contents: read
+@@ -17,7 +20,10 @@ concurrency:
+ 
+ jobs:
+   verify:
+-    runs-on: ubuntu-latest
++    # Ubuntu fissato, non "latest": Playwright supporta ufficialmente le LTS
++    # (22.04 e 24.04). "ubuntu-latest" è un bersaglio mobile che un domani
++    # GitHub sposterà a 26.04, potenzialmente non ancora supportata.
++    runs-on: ubuntu-24.04
+     steps:
+       - uses: actions/checkout@v4
+ 
+@@ -61,7 +67,7 @@ jobs:
+         run: npm run smoke
+ 
+   e2e:
+-    runs-on: ubuntu-latest
++    runs-on: ubuntu-24.04
+     needs: verify
+     steps:
+       - uses: actions/checkout@v4
+@@ -71,20 +77,58 @@ jobs:
+           node-version: '22'
+           cache: npm
+ 
+-      - run: npm ci
++      - name: Installazione pulita
++        run: npm ci
++
++      # La versione di Playwright determina quella dei browser: la usiamo come
++      # chiave di cache, così i browser si riscaricano solo quando Playwright
++      # cambia versione, non a ogni run.
++      - name: Versione di Playwright
++        id: pw
++        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+ 
+-      - name: Installa i browser Playwright
++      - name: Cache dei browser Playwright
++        id: pw-cache
++        uses: actions/cache@v4
++        with:
++          path: ~/.cache/ms-playwright
++          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
++
++      # Se la cache ha centrato, i binari dei browser ci sono già: installiamo
++      # solo le dipendenze di sistema (--only-shell è sufficiente per Chromium
++      # headless e non riscarica il browser). Su cache mancante, installazione
++      # completa. In entrambi i casi il browser non viene scaricato due volte.
++      - name: Installa Chromium (cache mancante)
++        if: steps.pw-cache.outputs.cache-hit != 'true'
+         run: npx playwright install --with-deps chromium
+ 
++      - name: Dipendenze di sistema (cache presente)
++        if: steps.pw-cache.outputs.cache-hit == 'true'
++        run: npx playwright install-deps chromium
++
+       - name: Build
+         run: npm run build:preview
+ 
+       - name: Test end-to-end
+         run: npm run test:e2e
+ 
+-      - uses: actions/upload-artifact@v4
+-        if: failure()
++      # Il report HTML si carica sempre, verde o rosso: serve anche per leggere
++      # il conteggio di passati/falliti/skip di una run riuscita.
++      - name: Report HTML Playwright
++        if: ${{ !cancelled() }}
++        uses: actions/upload-artifact@v4
+         with:
+           name: playwright-report
+           path: playwright-report/
+-          retention-days: 7
++          retention-days: 14
++
++      # test-results/ contiene screenshot, video e trace dei soli test falliti.
++      # Vuoto quando tutto passa, quindi lo carichiamo solo sui fallimenti.
++      - name: Screenshot, video e trace dei fallimenti
++        if: failure()
++        uses: actions/upload-artifact@v4
++        with:
++          name: playwright-failures
++          path: test-results/
++          retention-days: 14
++          if-no-files-found: ignore
+diff --git a/.github/workflows/deploy.yml b/.github/workflows/deploy.yml
+index 2effad2..f2f7b19 100644
+--- a/.github/workflows/deploy.yml
++++ b/.github/workflows/deploy.yml
+@@ -13,10 +13,8 @@ on:
+     branches: [main]
+   workflow_dispatch:
+ 
+-# Permessi minimi: solo il contenuto, e in scrittura perché il job committa
+-# il dataset aggiornato. Nessun permesso su pages, id-token o packages.
+ permissions:
+-  contents: write
++  contents: read
+ 
+ # Un solo deploy in produzione alla volta, senza cancellare quello in corso:
+ # interrompere a metà un aggiornamento dati lascerebbe il repository incoerente.
+@@ -25,9 +23,22 @@ concurrency:
+   cancel-in-progress: false
+ 
+ jobs:
++  # Gate di qualità: riusa l'INTERO workflow CI (lint, typecheck, unit test,
++  # build, smoke test E gli E2E Playwright). Se un qualsiasi step fallisce,
++  # questo job fallisce e il deploy, che ne dipende, non parte.
++  # È qui che si realizza il requisito "E2E bloccanti per il deploy": prima
++  # deploy.yml non eseguiva affatto gli E2E e girava in parallelo alla CI.
++  ci:
++    uses: ./.github/workflows/ci.yml
++
+   build-and-deploy:
+-    runs-on: ubuntu-latest
++    needs: ci
++    runs-on: ubuntu-24.04
+     environment: production
++    # Il commit del dataset richiede scrittura: la concediamo solo a questo job,
++    # non all'intero workflow.
++    permissions:
++      contents: write
+     steps:
+       - uses: actions/checkout@v4
+         with:
+@@ -41,15 +52,6 @@ jobs:
+       - name: Installazione pulita
+         run: npm ci
+ 
+-      - name: Lint
+-        run: npm run lint
+-
+-      - name: Typecheck
+-        run: npm run typecheck
+-
+-      - name: Unit test
+-        run: npm test
+-
+       # Aggiornamento dati solo quando ha senso: su push di codice si
+       # ricompila con l'ultimo dataset valido già nel repository.
+       - name: Aggiorna il dataset MIMIT
+@@ -69,8 +71,9 @@ jobs:
+           BASE_PATH: ${{ vars.BASE_PATH || '/pieno-dati/' }}
+         run: npm run smoke
+ 
+-      # Il commit dei dati avviene DOPO che build e smoke test sono passati:
+-      # non si registra come "valido" un dataset che non produce un sito sano.
++      # Il commit dei dati avviene DOPO che l'intera CI, build e smoke test sono
++      # passati: non si registra come "valido" un dataset che non produce un
++      # sito sano.
+       - name: Commit del dataset aggiornato
+         if: github.event_name != 'push'
+         env:
+diff --git a/playwright.config.ts b/playwright.config.ts
+index d17c25a..3570209 100644
+--- a/playwright.config.ts
++++ b/playwright.config.ts
+@@ -21,7 +21,12 @@ export default defineConfig({
+ 
+   use: {
+     baseURL: `http://localhost:${PORT}${BASE_PATH}`,
++    // Diagnostica sui fallimenti: la trace conserva DOM, rete e console del
++    // primo retry; screenshot e video vengono tenuti solo quando un test
++    // fallisce, per non gonfiare l'artifact con le run verdi.
+     trace: 'on-first-retry',
++    screenshot: 'only-on-failure',
++    video: 'retain-on-failure',
+     locale: 'it-IT',
+     timezoneId: 'Europe/Rome',
+   },

@@ -52,10 +52,6 @@ export function stationSlug(s: Station): string {
   return `${s.id}-${toSlug(s.name || s.brand || 'distributore')}`;
 }
 
-function priceSelfOrServed(s: Station, fuel: FuelKey): number | null {
-  const fp = s.fuels[fuel];
-  return fp ? (fp.self ?? fp.served ?? null) : null;
-}
 
 export function buildStationPage(
   station: Station,

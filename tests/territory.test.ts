@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildTerritory } from '../src/lib/geo/territory.ts';
+import { buildTerritory, MIN_COMUNE_STATIONS } from '../src/lib/geo/territory.ts';
 import { regionOf, toSlug } from '../src/lib/geo/regions.ts';
 import type { Station } from '../src/types/pieno.ts';
 
@@ -96,5 +96,47 @@ describe('buildTerritory', () => {
     const cheapest = tree[0].province[0].comuni[0].cheapest.benzina;
     expect(cheapest?.id).toBe('b');
     expect(cheapest?.price).toBeCloseTo(1.85);
+  });
+});
+
+describe('soglia di pubblicazione dei comuni', () => {
+  const base = {
+    id: '',
+    name: 'Distributore',
+    brand: 'Eni',
+    provincia: 'MI',
+    lat: 45.4,
+    lng: 9.1,
+    fuels: { benzina: { self: 1.9, served: null, updatedAt: '' } },
+  };
+
+  function comuneWith(count: number, comune: string): Station[] {
+    return Array.from({ length: count }, (_, i) => ({
+      ...base,
+      id: `${comune}-${i}`,
+      comune,
+    })) as Station[];
+  }
+
+  it('la soglia è cinque distributori', () => {
+    expect(MIN_COMUNE_STATIONS).toBe(5);
+  });
+
+  it('pubblica i comuni che raggiungono la soglia', () => {
+    const tree = buildTerritory(comuneWith(MIN_COMUNE_STATIONS, 'Grande'));
+    const comuni = tree[0]?.province[0]?.comuni ?? [];
+    expect(comuni.map((c) => c.name)).toEqual(['Grande']);
+  });
+
+  it('esclude i comuni sotto la soglia', () => {
+    const tree = buildTerritory(comuneWith(MIN_COMUNE_STATIONS - 1, 'Piccolo'));
+    expect(tree[0]?.province[0]?.comuni ?? []).toEqual([]);
+  });
+
+  it('conta comunque nella provincia le stazioni dei comuni esclusi', () => {
+    const stations = [...comuneWith(5, 'Grande'), ...comuneWith(2, 'Piccolo')];
+    const provincia = buildTerritory(stations)[0]?.province[0];
+    expect(provincia?.stationCount).toBe(7);
+    expect(provincia?.comuni.map((c) => c.name)).toEqual(['Grande']);
   });
 });

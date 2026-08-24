@@ -1,5 +1,5 @@
 /**
- * Pieno — orchestratore della pipeline (schema v2).
+ * BenzaGo — orchestratore della pipeline (schema v2).
  *
  * Responsabilità di QUESTO file: solo I/O e sequenza.
  *   1. scarica i due CSV MIMIT;
@@ -26,6 +26,8 @@ import {
   readFileSync,
   mkdirSync,
   existsSync,
+  readdirSync,
+  rmSync,
 } from 'node:fs';
 import { join } from 'node:path';
 
@@ -48,6 +50,7 @@ import { buildNews } from './lib/news.ts';
 import { computeFreshness } from './lib/freshness.ts';
 import { isValidExtractionDate } from './lib/validate.ts';
 import { buildSearchIndex } from './lib/searchIndex.ts';
+import { buildCells } from './lib/cells.ts';
 
 const ANAGRAFICA_URL =
   'https://www.mimit.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv';
@@ -97,7 +100,7 @@ function loadHistory(): HistoryPoint[] {
 async function main(): Promise<void> {
   const startedAt = Date.now();
   const generatedAt = new Date().toISOString();
-  console.log('▶️  Pieno ingest v2 — avvio');
+  console.log('▶️  BenzaGo ingest v2 — avvio');
 
   // 1. download
   const { anag, prez } = await loadCsvText();
@@ -215,6 +218,30 @@ async function main(): Promise<void> {
   writeFileSync(
     join(REPORTS_DIR, 'latest.json'),
     JSON.stringify(report, null, 2),
+  );
+
+  // Celle geografiche: permettono al calcolatore di scaricare solo la zona
+  // che gli serve invece dei 7 MB del dataset nazionale.
+  const CELLS_DIR = join(DATA_DIR, 'cells');
+  mkdirSync(CELLS_DIR, { recursive: true });
+  const { index: cellsIndex, files: cellFiles } = buildCells(
+    stations,
+    extractionDate,
+    SCHEMA_VERSION,
+  );
+  // Rimuove celle rimaste da esecuzioni precedenti (una zona può svuotarsi).
+  for (const stale of readdirSync(CELLS_DIR)) {
+    if (stale.endsWith('.json') && !cellFiles.has(stale.replace(/\.json$/, ''))) {
+      rmSync(join(CELLS_DIR, stale));
+    }
+  }
+  for (const [key, file] of cellFiles) {
+    writeFileSync(join(CELLS_DIR, `${key}.json`), JSON.stringify(file));
+  }
+  writeFileSync(join(DATA_DIR, 'cells-index.json'), JSON.stringify(cellsIndex));
+  console.log(
+    `\u{1F5FA}  Celle geografiche: ${cellFiles.size} file generati ` +
+      `(media ${Math.round(stations.length / cellFiles.size)} stazioni per cella).`,
   );
 
   // Indice di ricerca delle località (comuni), derivato dalle stazioni.

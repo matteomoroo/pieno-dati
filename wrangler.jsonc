@@ -1,0 +1,28 @@
+{
+  // Deploy di Pieno su Cloudflare Workers Static Assets.
+  //
+  // Il progetto è interamente statico: non c'è nessun `main`, quindi nessun
+  // codice Worker viene eseguito e le richieste sono servite direttamente dalla
+  // rete di asset. Se in futuro servisse logica dinamica, basterà aggiungere
+  // `"main": "./worker/index.ts"`.
+  //
+  // Perché Workers e non Pages: la build produce oltre 22.000 file, sopra il
+  // limite di 20.000 file per deployment di Pages. Workers sul piano Paid
+  // arriva a 100.000 asset per versione. Richiede Wrangler >= 4.34.0.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pieno",
+  "compatibility_date": "2026-08-01",
+  "assets": {
+    "directory": "./dist",
+    // Serve dist/404.html per gli URL inesistenti invece della pagina di
+    // errore generica di Cloudflare. Con 22.000 URL indicizzati i 404 sono
+    // inevitabili e devono riportare l'utente dentro il sito.
+    "not_found_handling": "404-page",
+    // Gli URL canonici di Pieno sono senza barra finale (trailingSlash:
+    // 'ignore' lato Astro): questa modalità evita redirect incrociati.
+    "html_handling": "auto-trailing-slash"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

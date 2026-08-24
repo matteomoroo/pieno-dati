@@ -29,7 +29,7 @@ import {
 function titleCase(s: string): string {
   return s
     .toLowerCase()
-    .replace(/(^|[\s'’\-\/])([a-zà-ÿ])/g, (_m, sep, ch) => sep + ch.toUpperCase());
+    .replace(/(^|[\s'’\-/])([a-zà-ÿ])/g, (_m, sep, ch) => sep + ch.toUpperCase());
 }
 
 interface Accumulator {

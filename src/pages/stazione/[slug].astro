@@ -11,6 +11,7 @@ import { getSpatialIndex } from '../../lib/geo/loadSpatial.ts';
 import { buildStationPage, stationSlug } from '../../lib/geo/stationPage.ts';
 import { formatPrice, FUEL_UI_LABELS } from '../../lib/data/load.ts';
 import { breadcrumbLd } from '../../lib/seo/breadcrumb.ts';
+import { BASE, HOME } from '../../lib/site.ts';
 
 export function getStaticPaths() {
   const { stations, index } = getSpatialIndex();
@@ -22,7 +23,7 @@ export function getStaticPaths() {
 
 const { data } = Astro.props;
 const s = data.station;
-const base = import.meta.env.BASE_URL;
+const base = BASE;
 const site = Astro.site?.href.replace(/\/$/, '') ?? '';
 
 const classLabels: Record<string, string> = {
@@ -44,20 +45,20 @@ const classColor: Record<string, string> = {
 
 const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}`;
 const ld = breadcrumbLd([
-  { name: 'Home', url: `${site}${base}` },
-  { name: s.comune, url: `${site}${base}` },
+  { name: 'Home', url: `${site}${HOME}` },
+  { name: s.comune, url: `${site}${HOME}` },
   { name: s.name, url: `${site}${base}/stazione/${stationSlug(s)}` },
 ]);
 ---
 
 <Base
-  title={`${s.brand} ${s.name} a ${s.comune} — prezzi carburante | Pieno`}
+  title={`${s.brand} ${s.name} a ${s.comune} — prezzi carburante | BenzaGo`}
   description={`Prezzi aggiornati di ${s.brand} ${s.name} a ${s.comune} (${s.provincia}): benzina, diesel e altri carburanti, confronto con la zona e risparmio stimato.`}
   canonicalPath={`/stazione/${stationSlug(s)}`}
   structuredData={ld}
 >
   <nav class="breadcrumb" aria-label="Percorso">
-    <a href={base}>Home</a>
+    <a href={HOME}>Home</a>
     <span aria-hidden="true">›</span>
     {
       data.regionSlug && (
@@ -70,7 +71,7 @@ const ld = breadcrumbLd([
     <span>{s.comune}</span>
   </nav>
 
-  <main class="station">
+  <main class="station" id="contenuto">
     <header class="station-head">
       <span class="station-brand">{s.brand}</span>
       <h1>{s.name}</h1>
