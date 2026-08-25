@@ -1,0 +1,78 @@
+---
+/**
+ * Wordmark benzaGo.
+ *
+ * La parola resta una sola — si legge «benzaGo» — ma il «Go» è staccato
+ * visivamente con il colore accent del brand e una lieve differenza di peso.
+ * Niente gradienti, ombre o effetti: la distinzione nasce solo dalla tipografia.
+ *
+ * Accessibilità: il testo accessibile è «benzaGo» in un unico blocco, quindi
+ * screen reader e ricerca nel browser leggono la parola intera. Su fondo scuro
+ * usiamo la variante chiara dell'accent, che sul petrolio del brand ha
+ * contrasto 8:1 invece di 4:1.
+ */
+interface Props {
+  /** `dark` = wordmark su fondo scuro (header). `light` = su fondo chiaro. */
+  tone?: 'dark' | 'light';
+  /** Elemento da usare: `span` dentro un link, `a` se deve essere il link. */
+  as?: 'span' | 'a';
+  href?: string;
+  class?: string;
+}
+
+const { tone = 'light', as = 'span', href, class: extra = '' } = Astro.props;
+const Tag = as;
+---
+
+<Tag
+  class:list={['wordmark', `wordmark-${tone}`, extra]}
+  {...href ? { href } : {}}
+  {...as === 'a' ? { 'aria-label': 'benzaGo, vai alla home' } : {}}
+>
+  <span class="wordmark-benza">benza</span><span class="wordmark-go">Go</span>
+</Tag>
+
+<style>
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    white-space: nowrap;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: baseline;
+  }
+
+  /* «benza» porta il peso del marchio, «Go» lo chiude con l'accento. */
+  .wordmark-benza {
+    font-weight: 600;
+  }
+  .wordmark-go {
+    font-weight: 700;
+    /* Il Go è leggermente più stretto: chiude la parola invece di allargarla. */
+    letter-spacing: -0.04em;
+  }
+
+  /* Su fondo chiaro: petrolio + verde accent. */
+  .wordmark-light .wordmark-benza {
+    color: var(--brand);
+  }
+  .wordmark-light .wordmark-go {
+    color: var(--accent);
+  }
+
+  /* Su fondo scuro: sabbia + verde chiaro, per restare leggibile. */
+  .wordmark-dark .wordmark-benza {
+    color: var(--bg);
+  }
+  .wordmark-dark .wordmark-go {
+    color: var(--accent-soft);
+  }
+
+  a.wordmark:hover .wordmark-go,
+  a.wordmark:focus-visible .wordmark-go {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+</style>

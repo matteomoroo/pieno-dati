@@ -1,5 +1,5 @@
 /**
- * Service worker di BenzaGo, generato a build time.
+ * Service worker di benzaGo, generato a build time.
  *
  * Era un file statico in `public/sw.js` con `VERSION = 'pieno-v1'` fisso e
  * `BASE = '/pieno-dati'` hardcoded: la cache non veniva mai invalidata e al
@@ -23,7 +23,7 @@ export const GET: APIRoute = () => {
 
 function serviceWorkerSource(base: string, buildId: string): string {
   return `/*
- * Service worker di BenzaGo — generato automaticamente, non modificare a mano.
+ * Service worker di benzaGo — generato automaticamente, non modificare a mano.
  * Sorgente: src/pages/sw.js.ts
  *
  * Strategie:
