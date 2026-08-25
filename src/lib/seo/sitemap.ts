@@ -79,4 +79,7 @@ export const STATIC_PATHS: SitemapEntry[] = [
   { path: '', changefreq: 'daily', priority: '1.0' },
   { path: '/andamento-prezzi', changefreq: 'daily', priority: '0.8' },
   { path: '/calcola-risparmio', changefreq: 'weekly', priority: '0.8' },
+  { path: '/privacy', changefreq: 'monthly', priority: '0.2' },
+  { path: '/cookie-e-tecnologie', changefreq: 'monthly', priority: '0.2' },
+  { path: '/note-legali', changefreq: 'monthly', priority: '0.2' },
 ];

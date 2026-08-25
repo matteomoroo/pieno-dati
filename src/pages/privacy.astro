@@ -1,0 +1,290 @@
+---
+/**
+ * Privacy Policy.
+ *
+ * Ogni affermazione di questa pagina corrisponde a un comportamento verificato
+ * nel codice durante l'audit privacy. Se il software cambia, questa pagina va
+ * aggiornata: non è un testo di facciata.
+ */
+import Base from '../layouts/Base.astro';
+import { BASE, HOME } from '../lib/site.ts';
+
+const base = BASE;
+const aggiornamento = '25 agosto 2026';
+---
+
+<Base
+  title="Privacy Policy | BenzaGo"
+  description="Come BenzaGo tratta i dati: quali informazioni sono coinvolte, chi le tratta e con quali finalità."
+  canonicalPath="/privacy"
+>
+  <main class="legal" id="contenuto">
+    <p class="legal-back"><a href={HOME}>← Torna a BenzaGo</a></p>
+    <h1>Privacy Policy</h1>
+    <p class="legal-updated">Ultimo aggiornamento: {aggiornamento}</p>
+
+    <p class="legal-lead">
+      BenzaGo è progettato per ridurre al minimo i dati trattati: non usa
+      strumenti di analisi statistica, non profila gli utenti e non installa
+      cookie. Alcuni dati tecnici, come l'indirizzo IP, sono però inevitabili
+      perché una pagina web possa esserti consegnata, e vengono trattati dai
+      fornitori descritti più sotto. Questa pagina spiega quali sono.
+    </p>
+
+    <h2>1. Titolare del trattamento</h2>
+    <p>
+      Il titolare del trattamento è <strong>Matteo Moro</strong>.
+    </p>
+    <p>
+      Contatto per questioni relative ai dati personali:
+      <strong>privacy@benzago.it</strong>
+    </p>
+
+    <h2>2. Quali dati trattiamo</h2>
+
+    <h3>2.1 Dati tecnici di navigazione</h3>
+    <p>
+      Come qualunque sito web, quando visiti BenzaGo il tuo browser invia al
+      server alcune informazioni necessarie a consegnarti le pagine: indirizzo
+      IP, tipo di browser e sistema operativo, indirizzo della pagina
+      richiesta, data e ora, e dati tecnici di rete utili alla sicurezza.
+    </p>
+    <p>
+      Questi dati sono trattati dal nostro fornitore di hosting (Cloudflare,
+      vedi punto 5) per erogare il servizio, garantirne la sicurezza e
+      proteggerlo da abusi. Noi non costruiamo profili degli utenti e non
+      colleghiamo queste informazioni alla tua identità.
+    </p>
+
+    <h3>2.2 Posizione geografica</h3>
+    <p>
+      La posizione viene richiesta <strong>solo se premi tu un pulsante</strong>
+      («Usa la mia posizione» nel calcolatore del risparmio, oppure il pulsante
+      di localizzazione sulla mappa). Non viene mai richiesta all'apertura della
+      pagina. In quel momento è il browser a chiederti un'autorizzazione
+      tecnica di sistema, che puoi negare subito o revocare in seguito dalle
+      impostazioni del browser: senza quell'autorizzazione la funzione non si
+      attiva.
+    </p>
+    <p>
+      Se concedi il permesso, il browser calcola le coordinate e le usa
+      localmente: BenzaGo le impiega per centrare la mappa oppure per stabilire
+      quale porzione dei dati sui distributori scaricare. Richiediamo
+      volutamente una precisione ridotta, non quella massima disponibile.
+    </p>
+    <p>
+      <strong>Le tue coordinate non vengono inviate ai nostri server, non
+      finiscono in un indirizzo web, non vengono salvate sul dispositivo e non
+      restano dopo la chiusura della pagina.</strong> Va detto con precisione
+      però che, per mostrarti i distributori vicini, il browser scarica la
+      porzione di dati corrispondente alla tua zona: quella richiesta identifica
+      un'area molto ampia, di circa cento chilometri di lato, non il punto in
+      cui ti trovi.
+    </p>
+    <p>
+      Se rifiuti il permesso, il servizio resta pienamente utilizzabile
+      cercando una località a mano.
+    </p>
+
+    <h3>2.3 Ricerche e preferenze</h3>
+    <p>
+      Le ricerche di località, la scelta del carburante e i valori che inserisci
+      nel calcolatore restano nella memoria della pagina e spariscono quando la
+      chiudi. Non li salviamo né li trasmettiamo.
+    </p>
+
+    <h3>2.4 Dati che non richiediamo</h3>
+    <p>
+      BenzaGo non ti chiede nome, email o altri dati identificativi: non
+      esistono registrazione, account, newsletter o moduli di contatto. Non
+      utilizziamo strumenti di statistica o di misurazione del pubblico, né
+      tecnologie pubblicitarie o di profilazione.
+    </p>
+    <p>
+      Questo non significa che nessun dato personale venga mai trattato: i dati
+      tecnici di connessione descritti al punto 2.1, fra cui l'indirizzo IP,
+      possono costituire dati personali e sono trattati dai fornitori indicati
+      al punto 5 per erogare il servizio e garantirne la sicurezza.
+    </p>
+
+    <h2>3. Finalità e basi giuridiche</h2>
+    <table class="legal-table">
+      <thead>
+        <tr><th>Finalità</th><th>Base giuridica</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Erogare il sito e le funzionalità richieste, compreso il caricamento dei dati relativi alla zona selezionata</td>
+          <td>Legittimo interesse a rendere disponibile il servizio richiesto, limitando il trattamento ai dati tecnici necessari (art. 6.1.f GDPR)</td>
+        </tr>
+        <tr>
+          <td>Sicurezza del servizio e protezione da abusi</td>
+          <td>Legittimo interesse alla sicurezza, all'integrità e alla disponibilità del servizio (art. 6.1.f GDPR)</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      La posizione precisa elaborata dal browser non viene trasmessa a BenzaGo.
+      Il permesso mostrato dal browser è un'autorizzazione tecnica del dispositivo
+      necessaria per usare la funzione e non viene utilizzato come consenso a
+      profilazione, pubblicità o altri trattamenti ulteriori. La richiesta della
+      porzione di dataset relativa a una macro-area rientra nell'erogazione della
+      funzione che hai scelto di utilizzare.
+    </p>
+
+    <h2>4. Cookie e tecnologie locali</h2>
+    <p>
+      <strong>BenzaGo non installa cookie.</strong> Utilizza soltanto tecnologie
+      di memorizzazione strettamente necessarie al funzionamento, descritte in
+      dettaglio nella pagina
+      <a href={`${base}/cookie-e-tecnologie`}>Cookie e tecnologie</a>.
+    </p>
+
+    <h2>5. Destinatari e fornitori</h2>
+
+    <h3>5.1 Cloudflare (hosting e distribuzione)</h3>
+    <p>
+      Il sito è ospitato e distribuito da Cloudflare, Inc. Per consegnarti le
+      pagine, Cloudflare tratta necessariamente i dati tecnici di connessione
+      descritti al punto 2.1, anche per finalità di sicurezza della rete.
+    </p>
+    <p>
+      Per i trattamenti che svolge per nostro conto nell'erogazione del
+      servizio, Cloudflare agisce in qualità di responsabile del trattamento
+      sulla base dell'accordo sul trattamento dei dati (DPA) applicabile al
+      servizio utilizzato. Per alcune finalità proprie — ad esempio la
+      sicurezza della propria rete e il rispetto di obblighi di legge —
+      Cloudflare può trattare dati in autonomia, secondo quanto indicato nella
+      propria documentazione. I dettagli sono nella
+      <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">privacy policy di Cloudflare</a>
+      e nel relativo
+      <a href="https://www.cloudflare.com/cloudflare-customer-dpa/" target="_blank" rel="noopener">accordo sul trattamento dei dati</a>.
+    </p>
+
+    <h3>5.2 OpenStreetMap (mappa)</h3>
+    <p>
+      Le immagini della mappa provengono dai server di OpenStreetMap. Quando
+      visualizzi la mappa, il tuo browser contatta direttamente
+      <code>tile.openstreetmap.org</code>, che riceve quindi il tuo indirizzo IP,
+      informazioni tecniche sul browser e l'indicazione delle porzioni di mappa
+      richieste. Per i trattamenti svolti sui propri servizi, la OpenStreetMap
+      Foundation opera come titolare autonomo; BenzaGo non riceve né può accedere
+      ai relativi log. Si applica la
+      <a href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener">privacy policy della OpenStreetMap Foundation</a>.
+    </p>
+
+    <h3>5.3 Link verso servizi esterni</h3>
+    <p>
+      Nelle pagine dei distributori è presente un collegamento per ottenere le
+      indicazioni stradali, che apre Google Maps. Il collegamento viene seguito
+      solo se lo scegli tu; da quel momento si applicano le condizioni e
+      l'informativa di Google.
+    </p>
+
+    <h2>6. Trasferimenti fuori dall'Unione Europea</h2>
+    <p>
+      Cloudflare è una società statunitense con infrastruttura distribuita a
+      livello mondiale: il trattamento dei dati tecnici può comportare
+      trasferimenti verso paesi terzi, regolati dalle garanzie previste dal capo
+      V del GDPR e descritte nella documentazione contrattuale del fornitore.
+      Anche la OpenStreetMap Foundation utilizza un'infrastruttura distribuita
+      per fornire le mappe; i relativi trattamenti e trasferimenti sono descritti
+      nella sua privacy policy.
+    </p>
+
+    <h2>7. Conservazione</h2>
+    <p>
+      BenzaGo non mantiene un database applicativo in cui vengano registrate le
+      visite, le ricerche o le posizioni degli utenti. I fornitori tecnici
+      coinvolti nell'erogazione del servizio possono invece generare e conservare
+      dati di rete e registri tecnici per finalità operative, di sicurezza e di
+      conformità, secondo i rispettivi ruoli e i periodi o criteri di conservazione
+      descritti nelle loro informative e nella documentazione contrattuale.
+    </p>
+    <p>
+      Le informazioni che il tuo browser salva sul dispositivo (vedi
+      <a href={`${base}/cookie-e-tecnologie`}>Cookie e tecnologie</a>) restano
+      finché non svuoti i dati del sito o disinstalli l'applicazione.
+    </p>
+
+    <h2>8. I tuoi diritti</h2>
+    <p>
+      Puoi esercitare, quando applicabili, i diritti previsti dagli articoli da
+      15 a 22 del GDPR: accesso, rettifica, cancellazione, limitazione,
+      opposizione e portabilità. Puoi inoltre revocare in ogni momento dalle
+      impostazioni del browser l'autorizzazione tecnica alla geolocalizzazione,
+      impedendo usi successivi di quella funzione.
+    </p>
+    <p>
+      Poiché non disponiamo di account né di archivi che colleghino i dati a
+      una persona identificata, in molti casi potremmo non essere in grado di
+      ricondurre una richiesta a uno specifico interessato senza informazioni
+      aggiuntive (art. 11 GDPR). È una conseguenza della quantità ridotta di
+      dati trattati, non un modo per limitare i tuoi diritti: per qualsiasi
+      richiesta puoi scrivere a <strong>privacy@benzago.it</strong> e valuteremo
+      come darvi seguito.
+    </p>
+
+    <h2>9. Reclamo all'autorità di controllo</h2>
+    <p>
+      Se ritieni che il trattamento violi la normativa, puoi proporre reclamo al
+      <a href="https://www.garanteprivacy.it/" target="_blank" rel="noopener">Garante per la protezione dei dati personali</a>
+      o all'autorità di controllo dello Stato in cui risiedi.
+    </p>
+
+    <h2>10. Modifiche</h2>
+    <p>
+      Se cambieremo il funzionamento del sito in modo che incida sui dati
+      trattati, aggiorneremo questa pagina e la data in alto. Le modifiche
+      sostanziali saranno segnalate sul sito.
+    </p>
+
+    <p class="legal-note">
+      Questo documento descrive il funzionamento tecnico del servizio verificato
+      alla data indicata. Non costituisce parere legale.
+    </p>
+  </main>
+</Base>
+
+<style>
+  .legal {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: var(--space-6, 2rem) var(--space-4, 1rem) var(--space-8, 3rem);
+    line-height: 1.65;
+  }
+  .legal-back { font-size: var(--fs-sm); margin-bottom: var(--space-4); }
+  .legal-updated { color: var(--text-muted); font-size: var(--fs-sm); }
+  .legal-lead {
+    font-size: 1.05rem;
+    padding: var(--space-4);
+    background: var(--surface-alt, #f0ede6);
+    border-radius: var(--radius-md, 10px);
+  }
+  .legal h2 { margin-top: var(--space-6, 2rem); font-size: 1.25rem; }
+  .legal h3 { margin-top: var(--space-5, 1.5rem); font-size: 1.05rem; }
+  .legal-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--space-3) 0;
+    font-size: var(--fs-sm);
+  }
+  .legal-table th,
+  .legal-table td {
+    text-align: left;
+    padding: 0.6rem 0.5rem;
+    border-bottom: 1px solid var(--border, #d8d3c8);
+    vertical-align: top;
+  }
+  .legal-note {
+    margin-top: var(--space-6);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border, #d8d3c8);
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+  }
+  .legal code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+</style>

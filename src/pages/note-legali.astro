@@ -1,0 +1,180 @@
+---
+/**
+ * Note legali: natura del servizio, disclaimer sui prezzi, fonte e licenza dei
+ * dati. I tempi di aggiornamento riportati sono quelli dichiarati dal MIMIT
+ * sulla pagina ufficiale del dataset.
+ */
+import Base from '../layouts/Base.astro';
+import { BASE, HOME } from '../lib/site.ts';
+
+const base = BASE;
+const aggiornamento = '25 agosto 2026';
+---
+
+<Base
+  title="Note legali | BenzaGo"
+  description="Natura del servizio, fonte e licenza dei dati, limiti di affidabilità dei prezzi."
+  canonicalPath="/note-legali"
+>
+  <main class="legal" id="contenuto">
+    <p class="legal-back"><a href={HOME}>← Torna a BenzaGo</a></p>
+    <h1>Note legali</h1>
+    <p class="legal-updated">Ultimo aggiornamento: {aggiornamento}</p>
+
+    <p class="legal-lead">
+      BenzaGo è un servizio informativo indipendente che rielabora dati pubblici
+      sui prezzi dei carburanti. <strong>Non è affiliato al Ministero delle
+      Imprese e del Made in Italy né da esso approvato.</strong>
+    </p>
+
+    <h2>1. Natura del servizio</h2>
+    <p>
+      BenzaGo consente di consultare e confrontare i prezzi dei carburanti
+      comunicati dai gestori degli impianti al Ministero delle Imprese e del
+      Made in Italy. Il servizio è gratuito, non richiede registrazione e ha
+      finalità puramente informative. Non vende carburante, non intermedia
+      acquisti e non ha rapporti commerciali con i distributori mostrati.
+    </p>
+
+    <h2>2. Prezzi: cosa vedi e con quale ritardo</h2>
+    <p>
+      Questo è il punto più importante della pagina, e vale la pena leggerlo.
+    </p>
+    <p>
+      Il Ministero pubblica quotidianamente un file contenente
+      <strong>i prezzi in vigore alle ore 8:00 del giorno precedente</strong> a
+      quello di pubblicazione. BenzaGo acquisisce periodicamente il dataset
+      pubblicato dal Ministero e ne rielabora il contenuto; sul sito viene
+      mostrata la data di riferimento dei dati disponibili.
+    </p>
+    <p>
+      Ne consegue che <strong>i prezzi mostrati non sono in tempo reale</strong>
+      e possono discostarsi anche sensibilmente da quelli effettivamente
+      praticati nel momento in cui leggi la pagina. Un gestore può aver
+      modificato il prezzo dopo la rilevazione, oppure non aver comunicato
+      tempestivamente l'aggiornamento.
+    </p>
+    <p class="legal-highlight">
+      Prima di rifornire fa fede esclusivamente il prezzo esposto presso
+      l'impianto.
+    </p>
+    <p>
+      Su ogni pagina indichiamo la data della rilevazione a cui i prezzi si
+      riferiscono e, quando i dati non sono recenti, lo segnaliamo
+      esplicitamente.
+    </p>
+
+    <h2>3. Fonte e licenza dei dati</h2>
+    <p>
+      <strong>Dati carburanti:</strong> Ministero delle Imprese e del Made in
+      Italy (MIMIT) — Osservatorio Prezzi Carburanti, dataset
+      <a
+        href="https://www.mimit.gov.it/it/open-data/elenco-dataset/carburanti-prezzi-praticati-e-anagrafica-degli-impianti"
+        target="_blank"
+        rel="noopener">Carburanti — Prezzi praticati e anagrafica degli impianti</a>.
+      Dati rielaborati da BenzaGo.
+    </p>
+    <p>
+      I dati sono rilasciati con licenza
+      <a href="https://www.dati.gov.it/content/italian-open-data-license-v20" target="_blank" rel="noopener">Italian Open Data License 2.0 (IODL 2.0)</a>,
+      che consente il riutilizzo, anche commerciale, con obbligo di citare la
+      fonte.
+    </p>
+    <p>
+      Il Ministero segnala che i dataset sono resi disponibili «in forma
+      attualmente sperimentale». BenzaGo esegue controlli di validità sui dati
+      ricevuti e, se una fornitura risulta anomala, mantiene in linea l'ultima
+      versione valida invece di pubblicare informazioni inattendibili.
+    </p>
+    <p>
+      Le rielaborazioni — medie, mediane, confronti, stime di risparmio e
+      andamenti storici — sono opera di BenzaGo e non provengono dal Ministero,
+      che non ne risponde.
+    </p>
+
+    <h2>4. Mappa</h2>
+    <p>
+      Le mappe sono realizzate con dati e immagini di
+      <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>,
+      resi disponibili dai suoi contributori secondo le rispettive licenze. La
+      posizione degli impianti deriva dalle coordinate presenti nel dataset
+      ministeriale e può contenere imprecisioni.
+    </p>
+
+    <h2>5. Limiti di responsabilità</h2>
+    <p>
+      Il servizio è offerto «così com'è». Pur impegnandoci per la correttezza
+      della rielaborazione, non possiamo garantire che i dati siano completi,
+      esatti o allineati alla situazione dell'impianto in un dato momento,
+      poiché dipendono da comunicazioni di terzi.
+    </p>
+    <p>
+      Non rispondiamo di eventuali disservizi, interruzioni o ritardi
+      nell'aggiornamento, né delle decisioni di acquisto assunte sulla base
+      delle informazioni pubblicate. Restano ferme le responsabilità che la
+      legge non consente di escludere, in particolare in caso di dolo o colpa
+      grave.
+    </p>
+
+    <h2>6. Disponibilità del servizio</h2>
+    <p>
+      BenzaGo è un progetto indipendente, offerto gratuitamente e senza garanzia
+      di continuità. Il servizio può essere sospeso, modificato o interrotto in
+      qualsiasi momento, anche per cause esterne come l'indisponibilità delle
+      fonti dati.
+    </p>
+
+    <h2>7. Segnalazioni</h2>
+    <p>
+      Per segnalare un errore nei dati o nel funzionamento del sito puoi
+      scrivere a <strong>ciao@benzago.it</strong>. Per correggere il prezzo di
+      un impianto alla fonte occorre però rivolgersi al gestore o ai canali
+      previsti dal Ministero: BenzaGo può rielaborare e segnalare anomalie nei
+      dati pubblicati, ma non può modificare la comunicazione originaria del
+      gestore.
+    </p>
+
+    <h2>8. Privacy</h2>
+    <p>
+      Il trattamento dei dati è descritto nella
+      <a href={`${base}/privacy`}>Privacy Policy</a> e nella pagina
+      <a href={`${base}/cookie-e-tecnologie`}>Cookie e tecnologie</a>.
+    </p>
+
+    <p class="legal-note">
+      Questo documento non costituisce parere legale.
+    </p>
+  </main>
+</Base>
+
+<style>
+  .legal {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: var(--space-6, 2rem) var(--space-4, 1rem) var(--space-8, 3rem);
+    line-height: 1.65;
+  }
+  .legal-back { font-size: var(--fs-sm); margin-bottom: var(--space-4); }
+  .legal-updated { color: var(--text-muted); font-size: var(--fs-sm); }
+  .legal-lead {
+    font-size: 1.05rem;
+    padding: var(--space-4);
+    background: var(--surface-alt, #f0ede6);
+    border-radius: var(--radius-md, 10px);
+  }
+  .legal-highlight {
+    font-weight: 600;
+    padding: var(--space-3) var(--space-4);
+    border-left: 4px solid var(--accent, #1b9e5a);
+    background: var(--surface-alt, #f0ede6);
+    border-radius: 0 var(--radius-sm, 6px) var(--radius-sm, 6px) 0;
+  }
+  .legal h2 { margin-top: var(--space-6, 2rem); font-size: 1.25rem; }
+  .legal-note {
+    margin-top: var(--space-6);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border, #d8d3c8);
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+  }
+</style>

@@ -1,0 +1,199 @@
+---
+/**
+ * Cookie e tecnologie locali.
+ *
+ * Il contenuto deriva dall'audit del codice: BenzaGo non usa cookie né Web
+ * Storage. Le uniche tecnologie di memorizzazione sono quelle della PWA,
+ * necessarie al funzionamento offline.
+ */
+import Base from '../layouts/Base.astro';
+import { BASE, HOME } from '../lib/site.ts';
+
+const base = BASE;
+const aggiornamento = '25 agosto 2026';
+---
+
+<Base
+  title="Cookie e tecnologie | BenzaGo"
+  description="BenzaGo non usa cookie. Ecco quali tecnologie di memorizzazione utilizza e perché."
+  canonicalPath="/cookie-e-tecnologie"
+>
+  <main class="legal" id="contenuto">
+    <p class="legal-back"><a href={HOME}>← Torna a BenzaGo</a></p>
+    <h1>Cookie e tecnologie</h1>
+    <p class="legal-updated">Ultimo aggiornamento: {aggiornamento}</p>
+
+    <p class="legal-lead">
+      <strong>BenzaGo non installa cookie</strong> e, allo stato attuale, non usa
+      tecnologie di profilazione o di misurazione del pubblico. Per questo non
+      vedi nessun banner di consenso: l'audit del codice non ha rilevato
+      tecnologie non tecniche che richiedano un consenso preventivo. Restano
+      invece i dati tecnici che qualunque sito
+      deve trattare per funzionare, descritti nella
+      <a href={`${base}/privacy`}>Privacy Policy</a>.
+    </p>
+
+    <h2>Perché non c'è un banner</h2>
+    <p>
+      Il banner serve quando un sito usa strumenti che richiedono il consenso
+      preventivo, come cookie di profilazione, statistiche o pubblicità.
+      BenzaGo non ne utilizza. Le uniche tecnologie che memorizzano qualcosa sul
+      tuo dispositivo sono quelle indispensabili a far funzionare il sito, e
+      questa pagina serve a spiegartele con chiarezza.
+    </p>
+
+    <h2>Cosa usiamo davvero</h2>
+    <p>
+      È utile distinguere: «cookie» non è sinonimo di qualunque cosa venga
+      salvata dal browser.
+    </p>
+
+    <table class="legal-table">
+      <thead>
+        <tr>
+          <th>Tecnologia</th>
+          <th>Usata?</th>
+          <th>A cosa serve</th>
+          <th>Durata</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Cookie</td>
+          <td><strong>No</strong></td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>localStorage</td>
+          <td><strong>No</strong></td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>sessionStorage</td>
+          <td><strong>No</strong></td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>IndexedDB</td>
+          <td><strong>No</strong></td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>Cache del browser (Cache Storage)</td>
+          <td><strong>Sì</strong></td>
+          <td>
+            Conserva pagine, elenco delle località e prezzi già scaricati, così
+            il sito è più veloce e resta consultabile senza connessione.
+            Contiene contenuti pubblici del sito, non informazioni che ti
+            identificano, e resta sul tuo dispositivo: non ci viene trasmessa.
+          </td>
+          <td>
+            Finché non svuoti i dati del sito. Le copie di versioni precedenti
+            vengono eliminate automaticamente.
+          </td>
+        </tr>
+        <tr>
+          <td>Service worker</td>
+          <td><strong>Sì</strong></td>
+          <td>
+            È il componente che permette il funzionamento offline e gestisce la
+            cache qui sopra. Non viene usato per profilazione o pubblicità e non
+            trasmette dati personali a terzi; effettua le richieste tecniche
+            necessarie a servire e aggiornare i contenuti di BenzaGo.
+          </td>
+          <td>
+            Finché non disinstalli l'app o non cancelli i dati del sito.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Le immagini della mappa</h2>
+    <p>
+      Le immagini della mappa arrivano dai server di OpenStreetMap e vengono
+      conservate soltanto nella normale cache del browser, come qualsiasi altra
+      immagine di un sito web. Il nostro service worker <strong>non le
+      intercetta, non le pre-scarica e non le conserva per l'uso
+      offline</strong>: un simile impiego dell'infrastruttura pubblica di
+      OpenStreetMap non sarebbe conforme alle sue condizioni d'uso. Quando
+      visualizzi la mappa il tuo browser contatta direttamente i server di
+      OpenStreetMap, che ricevono quindi il tuo indirizzo IP.
+    </p>
+
+    <h2>Come cancellare quello che è stato salvato</h2>
+    <p>
+      Puoi rimuovere in ogni momento tutto ciò che BenzaGo ha memorizzato:
+    </p>
+    <ul>
+      <li>
+        <strong>Da browser</strong>: nelle impostazioni del sito, scegli di
+        cancellare i dati o la cache per <code>benzago.it</code>.
+      </li>
+      <li>
+        <strong>Se hai installato l'app</strong>: disinstallandola vengono
+        rimossi anche i dati salvati.
+      </li>
+    </ul>
+    <p>
+      Cancellare questi dati non comporta perdite: il sito li ricostruisce alla
+      visita successiva.
+    </p>
+
+    <h2>Posizione geografica</h2>
+    <p>
+      La posizione non rientra tra le tecnologie di memorizzazione: viene
+      richiesta solo se premi il pulsante apposito, usata sul momento e mai
+      salvata. Il dettaglio è nella
+      <a href={`${base}/privacy`}>Privacy Policy</a>.
+    </p>
+
+    <p class="legal-note">
+      Se in futuro introdurremo strumenti che richiedono il consenso, questa
+      pagina sarà aggiornata e il consenso ti verrà richiesto prima
+      dell'attivazione.
+    </p>
+  </main>
+</Base>
+
+<style>
+  .legal {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: var(--space-6, 2rem) var(--space-4, 1rem) var(--space-8, 3rem);
+    line-height: 1.65;
+  }
+  .legal-back { font-size: var(--fs-sm); margin-bottom: var(--space-4); }
+  .legal-updated { color: var(--text-muted); font-size: var(--fs-sm); }
+  .legal-lead {
+    font-size: 1.05rem;
+    padding: var(--space-4);
+    background: var(--surface-alt, #f0ede6);
+    border-radius: var(--radius-md, 10px);
+  }
+  .legal h2 { margin-top: var(--space-6, 2rem); font-size: 1.25rem; }
+  .legal-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--space-3) 0;
+    font-size: var(--fs-sm);
+  }
+  .legal-table th,
+  .legal-table td {
+    text-align: left;
+    padding: 0.6rem 0.5rem;
+    border-bottom: 1px solid var(--border, #d8d3c8);
+    vertical-align: top;
+  }
+  .legal-note {
+    margin-top: var(--space-6);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border, #d8d3c8);
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+  }
+  .legal code { font-family: var(--font-mono); font-size: 0.9em; }
+</style>
