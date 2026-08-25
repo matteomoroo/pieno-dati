@@ -1,7 +1,7 @@
 /**
  * Utility condivise per la generazione delle sitemap.
  *
- * BenzaGo pubblica oltre 22.000 URL indicizzabili: una sitemap singola sarebbe
+ * benzaGo pubblica oltre 22.000 URL indicizzabili: una sitemap singola sarebbe
  * scomoda da diagnosticare in Search Console e vicina ai limiti di dimensione.
  * Usiamo quindi un sitemap index con file separati per tipo di pagina, e le
  * stazioni partizionate in blocchi.

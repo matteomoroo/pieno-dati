@@ -1,6 +1,6 @@
 ---
 /**
- * Layout base di BenzaGo.
+ * Layout base di benzaGo.
  * Gestisce <head>, SEO, font, service worker e wrappa il contenuto.
  *
  * Modifiche di questo sprint:
@@ -56,7 +56,7 @@ const ogImage = `${origin}${withBase('/og/og-default.png')}`;
 
     <!-- Open Graph / social -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="BenzaGo" />
+    <meta property="og:site_name" content="benzaGo" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
@@ -66,7 +66,7 @@ const ogImage = `${origin}${withBase('/og/og-default.png')}`;
     <meta property="og:image:height" content="630" />
     <meta
       property="og:image:alt"
-      content="BenzaGo — prezzi carburante in tutta Italia, dati ufficiali MIMIT"
+      content="benzaGo — prezzi carburante in tutta Italia, dati ufficiali MIMIT"
     />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
@@ -83,7 +83,7 @@ const ogImage = `${origin}${withBase('/og/og-default.png')}`;
     <link rel="manifest" href={withBase('/manifest.webmanifest')} />
     <link rel="apple-touch-icon" href={withBase('/icons/apple-touch-icon.png')} />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="BenzaGo" />
+    <meta name="apple-mobile-web-app-title" content="benzaGo" />
     {
       structuredData && (
         <script
@@ -97,7 +97,67 @@ const ogImage = `${origin}${withBase('/og/og-default.png')}`;
     <a class="skip-link" href="#contenuto">Vai al contenuto</a>
     <slot />
 
+    <footer class="site-legal">
+      <div class="site-legal-inner">
+        <nav class="site-legal-links" aria-label="Informazioni legali">
+          <a href={withBase('/privacy')}>Privacy</a>
+          <a href={withBase('/cookie-e-tecnologie')}>Cookie e tecnologie</a>
+          <a href={withBase('/note-legali')}>Note legali</a>
+        </nav>
+        <p class="site-legal-credits">
+          Dati carburanti: MIMIT — Osservatorio Prezzi Carburanti, licenza
+          <a
+            href="https://www.dati.gov.it/content/italian-open-data-license-v20"
+            target="_blank"
+            rel="noopener">IODL 2.0</a>, rielaborati da benzaGo. Servizio
+          indipendente, non affiliato al MIMIT. I prezzi non sono in tempo
+          reale: fa fede quello esposto all'impianto.
+        </p>
+        <p class="site-legal-credits">
+          Mappa: ©
+          <a
+            href="https://www.openstreetmap.org/copyright"
+            target="_blank"
+            rel="noopener">OpenStreetMap</a> contributors
+        </p>
+      </div>
+    </footer>
+
     <style>
+      .site-legal {
+        border-top: 1px solid var(--border, #d8d3c8);
+        margin-top: var(--space-6, 1.5rem);
+        font-size: var(--fs-xs, 0.7rem);
+        color: var(--text-muted, #6b7b7f);
+        line-height: 1.6;
+      }
+      .site-legal-inner {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: var(--space-5, 1.25rem) var(--space-4, 1rem) var(--space-6, 1.5rem);
+      }
+      .site-legal-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0 var(--space-5, 1.25rem);
+        margin-bottom: var(--space-3, 0.75rem);
+      }
+      .site-legal-links a {
+        color: var(--brand, #12303a);
+        font-weight: 500;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+      }
+      .site-legal-credits {
+        margin: 0 0 var(--space-2, 0.5rem);
+        max-width: 70ch;
+      }
+      @media (min-width: 1024px) {
+        .site-legal-inner {
+          padding-inline: var(--space-6, 1.5rem);
+        }
+      }
       .skip-link {
         position: absolute;
         left: -9999px;
