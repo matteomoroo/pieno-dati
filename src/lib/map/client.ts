@@ -14,6 +14,40 @@ interface InitOptions {
 }
 
 /**
+ * Colori dei marker per fascia di prezzo, allineati ai token semantici.
+ * MapLibre non legge le variabili CSS, quindi i valori vivono qui: questa è
+ * l'unica dichiarazione, non ripetuta nelle espressioni di stile.
+ *
+ * La classificazione (`tier`) non cambia: qui c'è solo il colore.
+ */
+export const TIER_COLORS = {
+  convenient: '#16825a', // tier -1
+  average: '#d48a1e', //  tier  0
+  expensive: '#be3e46', // tier  1
+} as const;
+
+/** Teal del brand, usato per l'anello del marker selezionato e i link. */
+const BRAND = '#066a63';
+
+/** Mascotte del popup, scelta dal `tier` già presente nella feature. */
+const MASCOT_BY_TIER: Record<number, string> = {
+  [-1]: 'mascot-convenient.png',
+  0: 'mascot-neutral.png',
+  1: 'mascot-expensive.png',
+};
+
+/**
+ * Inclinazione per fascia: la mascotte sorridente si appoggia leggermente
+ * all'indietro, quella delusa si affloscia in avanti. È un dettaglio di
+ * carattere, non un'informazione: il dato resta il colore e il prezzo.
+ */
+const MASCOT_TILT: Record<number, string> = {
+  [-1]: 'tilt-happy',
+  0: 'tilt-neutral',
+  1: 'tilt-sad',
+};
+
+/**
  * Inserisce il CSS di MapLibre come <link> a runtime.
  * Con un `import` (statico o dinamico) Astro raccoglie il foglio di stile nel
  * bundle CSS della pagina e lo mette in <head>: 65 KB render-blocking su ogni
@@ -167,11 +201,56 @@ export async function initMap({ dataUrl, initialFuel }: InitOptions): Promise<vo
           'match',
           ['get', 'tier'],
           -1,
-          '#22c55e',
+          TIER_COLORS.convenient,
           1,
-          '#ef5350',
-          '#f6c34e',
+          TIER_COLORS.expensive,
+          TIER_COLORS.average,
         ],
+      },
+    });
+
+    // Sorgente del solo punto selezionato: contiene zero o una feature, quindi
+    // non incide sulle prestazioni del layer principale, che resta intatto.
+    map.addSource('selected', {
+      type: 'geojson',
+      data: { type: 'FeatureCollection', features: [] },
+    });
+
+    // Due layer sottili sopra i punti: l'anello teal del brand e, sopra, il
+    // punto col colore semantico del suo tier e l'alone bianco. Il colore della
+    // fascia non viene mai sostituito dal teal.
+    map.addLayer({
+      id: 'selected-ring',
+      type: 'circle',
+      source: 'selected',
+      paint: {
+        'circle-radius': [
+          'interpolate', ['linear'], ['zoom'], 5, 9, 10, 12.5, 14, 16,
+        ],
+        'circle-color': 'rgba(0,0,0,0)',
+        'circle-stroke-width': 3,
+        'circle-stroke-color': BRAND,
+      },
+    });
+    map.addLayer({
+      id: 'selected-point',
+      type: 'circle',
+      source: 'selected',
+      paint: {
+        'circle-radius': [
+          'interpolate', ['linear'], ['zoom'], 5, 5, 10, 7.5, 14, 10,
+        ],
+        'circle-color': [
+          'match',
+          ['get', 'tier'],
+          -1,
+          TIER_COLORS.convenient,
+          1,
+          TIER_COLORS.expensive,
+          TIER_COLORS.average,
+        ],
+        'circle-stroke-width': 2.5,
+        'circle-stroke-color': '#ffffff',
       },
     });
 
@@ -184,23 +263,60 @@ export async function initMap({ dataUrl, initialFuel }: InitOptions): Promise<vo
         brand: string;
         slug: string;
         price: number;
+        tier: number;
       };
       const coords = (f.geometry as GeoJSON.Point).coordinates as [
         number,
         number,
       ];
       const stationUrl = `${baseUrl}/stazione/${props.slug}`;
-      new maplibregl.Popup({ closeButton: true })
+
+      // Evidenzia il punto scelto: stessa feature, nessun marker DOM.
+      (map.getSource('selected') as maplibregl.GeoJSONSource)?.setData({
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: coords },
+            properties: { tier: props.tier },
+          },
+        ],
+      });
+
+      // La mascotte è decorativa: ripete un'informazione già data dal colore
+      // del marker, dal prezzo e dalla legenda. Non è mai l'unico segnale.
+      const mascot = MASCOT_BY_TIER[props.tier] ?? MASCOT_BY_TIER[0];
+
+      const tilt = MASCOT_TILT[props.tier] ?? MASCOT_TILT[0];
+      const prezzo = props.price.toLocaleString('it-IT', {
+        minimumFractionDigits: 3,
+        maximumFractionDigits: 3,
+      });
+
+      // Due colonne: a sinistra i dati, a destra la mascotte nel suo spazio.
+      // Così fa parte del layout invece di essere appoggiata sopra la card.
+      const popup = new maplibregl.Popup({ closeButton: true, maxWidth: '300px' })
         .setLngLat(coords)
         .setHTML(
-          `<strong>${props.brand}</strong><br>${props.name}<br>` +
-            `${props.price.toLocaleString('it-IT', {
-              minimumFractionDigits: 3,
-              maximumFractionDigits: 3,
-            })} €/L<br>` +
-            `<a href="${stationUrl}" style="color:#1b9e5a;font-weight:600;text-decoration:none">Vedi dettagli →</a>`,
+          `<div class="pin-card">` +
+            `<div class="pin-info">` +
+              `<p class="pin-brand">${props.brand}</p>` +
+              `<p class="pin-name">${props.name}</p>` +
+              `<p class="pin-price">${prezzo}<span class="pin-unit"> €/L</span></p>` +
+              `<a href="${stationUrl}" class="pin-link">Vedi dettagli →</a>` +
+            `</div>` +
+            `<img class="pin-mascot ${tilt}" src="${baseUrl}/brand/${mascot}" alt="" aria-hidden="true" width="72" height="72" decoding="async">` +
+          `</div>`,
         )
         .addTo(map);
+
+      // Chiudendo il popup il punto torna normale.
+      popup.on('close', () => {
+        (map.getSource('selected') as maplibregl.GeoJSONSource)?.setData({
+          type: 'FeatureCollection',
+          features: [],
+        });
+      });
     });
     map.on('mouseenter', 'points', () => {
       map.getCanvas().style.cursor = 'pointer';

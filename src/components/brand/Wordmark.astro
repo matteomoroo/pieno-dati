@@ -56,18 +56,20 @@ const Tag = as;
 
   /* Su fondo chiaro: petrolio + verde accent. */
   .wordmark-light .wordmark-benza {
-    color: var(--brand);
+    color: var(--text-primary);
   }
   .wordmark-light .wordmark-go {
-    color: var(--accent);
+    color: var(--brand-primary);
   }
 
   /* Su fondo scuro: sabbia + verde chiaro, per restare leggibile. */
   .wordmark-dark .wordmark-benza {
-    color: var(--bg);
+    color: var(--surface);
   }
   .wordmark-dark .wordmark-go {
-    color: var(--accent-soft);
+    /* Teal chiaro: 5,03:1 sul petrolio dell'header, quindi AA anche per testo
+       normale. Il lime è escluso: 1,58:1 su bianco e fuori direzione. */
+    color: var(--brand-on-dark);
   }
 
   a.wordmark:hover .wordmark-go,

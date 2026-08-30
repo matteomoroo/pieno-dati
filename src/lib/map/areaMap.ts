@@ -8,6 +8,7 @@
  * MapLibre viene importato dinamicamente: il suo peso (~800KB) si scarica solo
  * se l'utente decide di interagire.
  */
+import { TIER_COLORS } from './client.ts';
 import type { Station, StationsFile, FuelKey } from '../../types/pieno.ts';
 
 interface AreaMapOptions {
@@ -118,10 +119,10 @@ export async function activateAreaMap(opts: AreaMapOptions): Promise<void> {
           'match',
           ['get', 'tier'],
           -1,
-          '#22c55e',
+          TIER_COLORS.convenient,
           1,
-          '#ef5350',
-          '#f6c34e',
+          TIER_COLORS.expensive,
+          TIER_COLORS.average,
         ],
       },
     });

@@ -1,0 +1,175 @@
+---
+/**
+ * Selettore dell'app di navigazione.
+ *
+ * Usa <dialog> nativo: gestisce da solo focus trap, Escape e backdrop, quindi
+ * non serve JavaScript per rifarlo a mano. Il focus torna alla CTA alla
+ * chiusura, comportamento nativo di showModal()/close().
+ *
+ * Nessuna preferenza viene memorizzata: il selettore ricompare a ogni click.
+ */
+interface Props {
+  lat: number;
+  lng: number;
+  /** Nome della stazione, per il testo accessibile della CTA. */
+  label: string;
+}
+const { lat, lng, label } = Astro.props;
+---
+
+<div class="nav-picker" data-lat={lat} data-lng={lng}>
+  <button
+    type="button"
+    class="btn-primary nav-picker-cta"
+    aria-haspopup="dialog"
+    aria-label={`Avvia navigazione verso ${label}`}
+  >
+    ➤ Avvia navigazione
+  </button>
+
+  <dialog class="nav-picker-dialog" aria-labelledby="nav-picker-title">
+    <h2 id="nav-picker-title">Apri indicazioni con</h2>
+    <ul class="nav-picker-list">
+      <!-- riempita a runtime: l'ordine dipende dalla piattaforma -->
+    </ul>
+    <button type="button" class="nav-picker-close">Annulla</button>
+  </dialog>
+</div>
+
+<style>
+  .nav-picker {
+    display: contents;
+  }
+  .nav-picker-dialog {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg, 14px);
+    padding: var(--space-5);
+    max-width: 22rem;
+    width: calc(100vw - 2rem);
+    background: var(--surface);
+    color: var(--text-primary);
+  }
+  .nav-picker-dialog::backdrop {
+    background: rgb(16 36 33 / 45%);
+  }
+  .nav-picker-dialog h2 {
+    margin: 0 0 var(--space-4);
+    font-size: var(--fs-base);
+  }
+  .nav-picker-list {
+    list-style: none;
+    margin: 0 0 var(--space-4);
+    padding: 0;
+    display: grid;
+    gap: var(--space-2);
+  }
+  .nav-picker-list a {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 48px;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md, 10px);
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .nav-picker-list a:hover,
+  .nav-picker-list a:focus-visible {
+    border-color: var(--brand-primary);
+    background: var(--background);
+  }
+  /* Icona generica di navigazione: nessun logo proprietario delle app. */
+  .nav-picker-icon {
+    flex: none;
+    color: var(--brand-primary);
+  }
+  .nav-picker-close {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md, 10px);
+    background: transparent;
+    color: var(--text-secondary);
+    font: inherit;
+    cursor: pointer;
+  }
+  .nav-picker-close:hover,
+  .nav-picker-close:focus-visible {
+    border-color: var(--brand-primary);
+    color: var(--text-primary);
+  }
+
+  @media (max-width: 640px) {
+    /* Su schermo stretto il dialog si comporta da bottom sheet. */
+    .nav-picker-dialog {
+      margin: auto auto 0;
+      width: 100%;
+      max-width: none;
+      border-radius: var(--radius-lg, 14px) var(--radius-lg, 14px) 0 0;
+      border-bottom: 0;
+    }
+  }
+</style>
+
+<script>
+  import { navigationOptions, detectPlatform } from '../../lib/navigation/apps.ts';
+
+  document.querySelectorAll<HTMLElement>('.nav-picker').forEach((root) => {
+    const cta = root.querySelector<HTMLButtonElement>('.nav-picker-cta');
+    const dialog = root.querySelector<HTMLDialogElement>('.nav-picker-dialog');
+    const list = root.querySelector<HTMLUListElement>('.nav-picker-list');
+    const close = root.querySelector<HTMLButtonElement>('.nav-picker-close');
+    if (!cta || !dialog || !list || !close) return;
+
+    const lat = Number(root.dataset.lat);
+    const lng = Number(root.dataset.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+    const icona =
+      '<svg class="nav-picker-icon" width="20" height="20" viewBox="0 0 24 24" ' +
+      'fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" ' +
+      'aria-hidden="true"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg>';
+
+    // L'elenco è costruito a runtime perché l'ordine dipende dal dispositivo.
+    // Il contenuto è generato da noi, non da input dell'utente.
+    function popola(): void {
+      const platform = detectPlatform(navigator.userAgent, navigator.maxTouchPoints);
+      list!.innerHTML = navigationOptions(lat, lng, platform)
+        .map(
+          (o) =>
+            `<li><a href="${o.url}" target="_blank" rel="noopener noreferrer">${icona}<span>${o.label}</span></a></li>`,
+        )
+        .join('');
+    }
+
+    cta.addEventListener('click', () => {
+      popola();
+      dialog.showModal();
+      // Focus sulla prima opzione: chi naviga da tastiera è già sul contenuto.
+      dialog.querySelector<HTMLAnchorElement>('.nav-picker-list a')?.focus();
+    });
+
+    close.addEventListener('click', () => dialog.close());
+
+    // Click sul backdrop: chiude solo se il punto è fuori dal riquadro.
+    dialog.addEventListener('click', (event) => {
+      if (event.target !== dialog) return;
+      const r = dialog.getBoundingClientRect();
+      const dentro =
+        event.clientX >= r.left && event.clientX <= r.right &&
+        event.clientY >= r.top && event.clientY <= r.bottom;
+      if (!dentro) dialog.close();
+    });
+
+    // showModal/close riportano il focus alla CTA da soli; lo rendiamo esplicito
+    // perché alcuni browser lo perdono se il dialog viene chiuso da Escape.
+    dialog.addEventListener('close', () => cta.focus());
+
+    // Scegliere un'app chiude il selettore: al ritorno non resta aperto.
+    list.addEventListener('click', (event) => {
+      if ((event.target as HTMLElement).closest('a')) dialog.close();
+    });
+  });
+</script>
