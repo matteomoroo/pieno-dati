@@ -6,6 +6,7 @@
  * risparmio su 20/40/60L, alternative vicine, mappa interattiva, naviga/condividi.
  */
 import Base from '../../layouts/Base.astro';
+import NavigationPicker from '../../components/navigation/NavigationPicker.astro';
 import MiniMap from '../../components/territory/MiniMap.astro';
 import { getSpatialIndex } from '../../lib/geo/loadSpatial.ts';
 import { buildStationPage, stationSlug } from '../../lib/geo/stationPage.ts';
@@ -43,7 +44,6 @@ const classColor: Record<string, string> = {
   dati_insufficienti: 'var(--text-faint)',
 };
 
-const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}`;
 const ld = breadcrumbLd([
   { name: 'Home', url: `${site}${HOME}` },
   { name: s.comune, url: `${site}${HOME}` },
@@ -81,9 +81,7 @@ const ld = breadcrumbLd([
     </header>
 
     <div class="station-actions">
-      <a class="btn-primary" href={navUrl} target="_blank" rel="noopener">
-        ➤ Avvia navigazione
-      </a>
+      <NavigationPicker lat={s.lat} lng={s.lng} label={`${s.brand} ${s.name}`} />
       <button class="btn-secondary" id="share-btn" type="button">Condividi</button>
     </div>
 

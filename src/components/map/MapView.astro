@@ -83,18 +83,24 @@ const dataUrl = withBase('/data/stations.json');
     align-items: center;
     justify-content: center;
     gap: 8px;
-    background: var(--accent);
-    color: #fff;
-    border: none;
+    /* Superficie chiara con accento teal: la barra non compete più con la
+       mappa, che è il contenuto principale. Funzione e posizione invariate. */
+    background: var(--surface);
+    color: var(--accent);
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 2px 10px rgb(16 36 33 / 12%);
     padding: 11px;
     border-radius: 9px;
     font-family: var(--font-body);
     font-size: var(--fs-sm);
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
   }
-  .locate-btn:hover {
-    background: var(--accent-hover);
+  .locate-btn:hover,
+  .locate-btn:focus-visible {
+    background: var(--accent);
+    color: var(--surface);
+    border-color: var(--accent);
   }
   .map-legend {
     display: flex;
@@ -112,6 +118,126 @@ const dataUrl = withBase('/data/stations.json');
     border-radius: 50%;
     margin-right: 3px;
     vertical-align: middle;
+  }
+
+  /* Popup MapLibre: il wrapper esterno ha angoli propri e un'ombra pesante.
+     Va arrotondato anche lui, altrimenti resta un rettangolo squadrato dietro
+     al contenuto. `:global` perché il markup lo crea MapLibre a runtime. */
+  .map-wrap :global(.maplibregl-popup-content) {
+    border-radius: 15px;
+    padding: 12px 14px 12px 12px;
+    box-shadow: 0 4px 16px rgb(16 36 33 / 14%);
+    border: 1px solid var(--border);
+    font-family: var(--font-body);
+    font-size: var(--fs-sm);
+    color: var(--text);
+    line-height: 1.45;
+  }
+  .map-wrap :global(.maplibregl-popup-close-button) {
+    border-radius: 0 15px 0 8px;
+    width: 26px;
+    height: 26px;
+    font-size: 17px;
+    color: var(--text-muted);
+  }
+  .map-wrap :global(.maplibregl-popup-close-button:hover) {
+    background: var(--surface-alt);
+    color: var(--text);
+  }
+  /* Popup a due colonne: dati a sinistra, mascotte nella sua colonna a destra.
+     Non è sovrapposta alla card, quindi non copre mai prezzo o link e la
+     larghezza del popup non dipende dalla sua presenza. */
+  .map-wrap :global(.pin-card) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 10px;
+  }
+  .map-wrap :global(.pin-info) {
+    min-width: 0;
+  }
+  .map-wrap :global(.pin-card p) {
+    margin: 0;
+  }
+  .map-wrap :global(.pin-brand) {
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.25;
+  }
+  .map-wrap :global(.pin-name) {
+    color: var(--text-muted);
+    font-size: var(--fs-xs);
+    line-height: 1.35;
+    margin-bottom: 6px !important;
+  }
+  .map-wrap :global(.pin-price) {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--text);
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+  .map-wrap :global(.pin-unit) {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+  }
+  .map-wrap :global(.pin-link) {
+    display: inline-block;
+    margin-top: 6px;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: var(--fs-sm);
+    text-decoration: none;
+  }
+  .map-wrap :global(.pin-link:hover),
+  .map-wrap :global(.pin-link:focus-visible) {
+    text-decoration: underline;
+  }
+
+  /* Mascotte: decorativa, non intercetta il puntatore, allineata alla base
+     della colonna testo così poggia sulla stessa linea del link. */
+  .map-wrap :global(.pin-mascot) {
+    width: 66px;
+    height: 66px;
+    display: block;
+    margin-bottom: -2px;
+    pointer-events: none;
+    user-select: none;
+    transform-origin: bottom center;
+    animation: pin-mascot-in 180ms ease-out both;
+  }
+  .map-wrap :global(.pin-mascot.tilt-happy) {
+    transform: rotate(-6deg);
+  }
+  .map-wrap :global(.pin-mascot.tilt-neutral) {
+    transform: rotate(-3deg);
+  }
+  .map-wrap :global(.pin-mascot.tilt-sad) {
+    transform: rotate(5deg);
+  }
+
+  @keyframes pin-mascot-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @media (max-width: 640px) {
+    .map-wrap :global(.pin-mascot) {
+      width: 50px;
+      height: 50px;
+    }
+    .map-wrap :global(.pin-price) {
+      font-size: 1.05rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .map-wrap :global(.pin-mascot) {
+      animation: none;
+    }
   }
 </style>
 

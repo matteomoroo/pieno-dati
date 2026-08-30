@@ -1,46 +1,76 @@
 /*
- * Pieno — design token.
- * Fonte di verità per colori, tipografia, spaziature. Derivati dal mockup
- * approvato: identità "totem prezzi" delle stazioni di servizio.
+ * benzaGo — design token.
+ * Fonte di verità per colori, tipografia, spaziature.
+ * Palette teal/petrolio approvata (brand-tokens.css del pacchetto FINAL).
  *
  * Regole d'uso dei colori:
- *  - --brand-* : superfici forti e testo (blu-petrolio), colore del brand;
- *  - --accent-* : verde carburante, SOLO per azioni positive e CTA;
- *  - --price-good / --price-mid / --price-bad : i tre semafori, riservati
- *    ESCLUSIVAMENTE alla classificazione dei prezzi. Mai decorativi.
+ *  - --brand-* : identità, superfici forti, azioni. Teal #087F73.
+ *  - --brand-accent : lime #B7DC42, SOLO elemento grafico. Ha 1,58:1 su bianco,
+ *    quindi non va mai usato per testo.
+ *  - --price-* : i tre semafori dei prezzi, riservati alla classificazione.
+ *    Mai decorativi. Ogni semaforo ha un token "-text" accessibile separato
+ *    dal colore grafico, perché l'ambra #D48A1E ha solo 2,82:1 su bianco.
+ *
+ * I nomi storici (--bg, --brand, --accent, --price-good…) restano come alias
+ * dei nomi concettuali: sono già usati nei componenti e rimapparli qui evita
+ * di disseminare colori letterali nel CSS.
  */
 
 :root {
+  /* ---- palette brand approvata ------------------------------------- */
+  --brand-primary: #066a63;
+  --brand-primary-dark: #054a46;
+  --brand-accent: #0b7f73; /* teal chiaro: accenti, non riempimenti */
+  --brand-on-dark: #5fc8b8; /* teal chiaro leggibile su superfici scure: 5,03:1 su #054A46 */
+  --brand-lime: #b7dc42; /* solo grafico: 1,58:1 su bianco, mai testo */
+  --background: #f6f8f7;
+  --text-primary: #102421;
+  --text-secondary: #4b635f;
+
+  /* ---- semantici prezzo: grafico + testo accessibile ---------------- */
+  --price-convenient: #16825a;
+  --price-convenient-text: #16825a; /* 4,80:1 su bianco ✓ AA */
+  --price-average: #d48a1e; /* grafico: badge, bordi, sfondi */
+  --price-average-text: #9a6410; /* derivato AA: 4,99:1 su bianco */
+  --price-expensive: #be3e46;
+  --price-expensive-text: #be3e46; /* 5,29:1 su bianco ✓ AA */
+
+  --success: #16825a;
+  --warning: #d48a1e;
+  --warning-text: #9a6410; /* stesso derivato accessibile */
+  --error: #b53743;
+  --info: #2f5bea;
+
   /* Superfici */
-  --bg: #f7f5f0; /* sabbia, fondo pagina — leggibile sotto il sole */
+  --bg: #f6f8f7; /* sabbia, fondo pagina — leggibile sotto il sole */
   --surface: #ffffff; /* card e riquadri */
-  --surface-alt: #efece4; /* superficie leggermente marcata */
+  --surface-alt: #eef3f1; /* superficie leggermente marcata */
 
   /* Brand — blu-petrolio */
-  --brand: #12303a;
-  --brand-soft: #2a4a54; /* bordi/divisori su fondo brand */
-  --brand-ink: #9db3b8; /* testo secondario su fondo brand */
+  --brand: #054a46; /* superfici forti: header, totem */
+  --brand-soft: #0b7f73; /* bordi/divisori su fondo brand */
+  --brand-ink: #b8d4cf; /* testo secondario su fondo brand */
 
   /* Accento — verde carburante */
-  --accent: #1b9e5a;
-  --accent-hover: #17864c;
-  --accent-soft: #7bd8a4; /* badge/evidenze tenui */
+  --accent: #066a63; /* CTA, link, tab attiva */
+  --accent-hover: #054a46;
+  --accent-soft: #0b7f73; /* badge/evidenze tenui */
 
   /* Testo su fondo chiaro */
-  --text: #12303a;
-  --text-muted: #6b7b7f;
-  --text-faint: #8a8578;
+  --text: #102421;
+  --text-muted: #4b635f;
+  --text-faint: #6e847f;
 
   /* Bordi */
-  --border: #d8d3c8;
-  --border-strong: #c8d0cb;
+  --border: #d9e4e1;
+  --border-strong: #c2d5d1;
 
   /* Semaforo prezzi — SOLO classificazione */
-  --price-good: #22c55e;
+  --price-good: #16825a;
   --price-good-ink: #ffffff;
-  --price-mid: #f6c34e;
-  --price-mid-ink: #3a2e0a;
-  --price-bad: #ef5350;
+  --price-mid: #d48a1e;
+  --price-mid-ink: #2b1c04;
+  --price-bad: #be3e46;
   --price-bad-ink: #ffffff;
 
   /* Stati dati (freschezza) */

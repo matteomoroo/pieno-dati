@@ -42,7 +42,15 @@ const baseUrl = BASE;
   <header class="hero">
     <div class="hero-bar">
       <div class="brand">
-        <span class="brand-mark" aria-hidden="true">⛽</span>
+        <img
+          class="brand-mark"
+          src={`${baseUrl}/brand/logo-symbol-light.png`}
+          alt=""
+          aria-hidden="true"
+          width="34"
+          height="34"
+          decoding="async"
+        />
         <Wordmark tone="dark" class="brand-name" />
       </div>
       <nav class="hero-nav" aria-label="Strumenti">
@@ -212,7 +220,17 @@ const baseUrl = BASE;
     gap: var(--space-2);
   }
   .brand-mark {
-    font-size: 20px;
+    /* Simbolo ufficiale (asset light, pompa teal): non ridisegnato né ritagliato.
+       Sul fondo teal dell'header il teal su teal darebbe 1,06:1, quindi il
+       simbolo poggia su un badge chiaro: contrasto 4,89:1 e logo standard
+       riconoscibile, senza introdurre una versione alternativa del marchio. */
+    width: clamp(30px, 28px + 0.6vw, 40px);
+    height: auto;
+    display: block;
+    box-sizing: content-box;
+    padding: 5px;
+    background: var(--surface);
+    border-radius: 10px;
   }
   .brand-name {
     /* la dimensione cresce con la viewport, senza breakpoint dedicati */
@@ -336,15 +354,18 @@ const baseUrl = BASE;
     font-weight: 500;
   }
 
+  /* Superficie bianca con bordo leggero: la card risalta per gerarchia
+     tipografica, non perché è un blocco colorato. */
   .totem {
-    background: var(--brand);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     padding: 14px 18px;
     margin-bottom: var(--space-4);
   }
   .totem-label {
     font-size: var(--fs-xs);
-    color: var(--brand-ink);
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
@@ -363,28 +384,28 @@ const baseUrl = BASE;
     font-family: var(--font-mono);
     font-size: var(--fs-price);
     font-weight: 700;
-    color: var(--bg);
+    color: var(--brand-primary-dark); /* 10,12:1 su bianco */
     letter-spacing: -1px;
   }
   .totem-unit {
     font-size: var(--fs-sm);
-    color: var(--brand-ink);
+    color: var(--text-secondary);
   }
   .totem-served {
     display: flex;
     align-items: baseline;
     gap: 5px;
     padding-left: 10px;
-    border-left: 0.5px solid var(--brand-soft);
+    border-left: 1px solid var(--border);
   }
   .totem-served-label {
     font-size: var(--fs-xs);
-    color: var(--brand-ink);
+    color: var(--text-secondary);
   }
   .totem-served-price {
     font-family: var(--font-mono);
     font-size: var(--fs-lg);
-    color: var(--bg);
+    color: var(--text-primary);
   }
 
   .site-footer {
