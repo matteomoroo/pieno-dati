@@ -1,73 +1,73 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-16T12:05:52.765Z",
-  "sourceExtractionDate": "2026-09-15",
+  "generatedAt": "2026-09-17T12:09:06.390Z",
+  "sourceExtractionDate": "2026-09-16",
   "freshness": {
-    "sourceExtractionDate": "2026-09-15",
-    "generatedAt": "2026-09-16T12:05:52.765Z",
+    "sourceExtractionDate": "2026-09-16",
+    "generatedAt": "2026-09-17T12:09:06.390Z",
     "ageDays": 1,
     "status": "fresh"
   },
-  "total": 21529,
+  "total": 21528,
   "counts": {
     "benzina": {
-      "self": 20148,
-      "served": 13783
+      "self": 20149,
+      "served": 13786
     },
     "gasolio": {
-      "self": 20186,
-      "served": 13766
+      "self": 20188,
+      "served": 13769
     },
     "benzina_plus": {
-      "self": 1362,
-      "served": 1072
+      "self": 1365,
+      "served": 1070
     },
     "diesel_plus": {
-      "self": 5091,
-      "served": 4300
+      "self": 5090,
+      "served": 4302
     },
     "gpl": {
       "self": 162,
-      "served": 4516
+      "served": 4517
     },
     "hvo": {
-      "self": 2560,
-      "served": 1478
+      "self": 2569,
+      "served": 1479
     },
     "metano": {
-      "self": 125,
-      "served": 1572
+      "self": 126,
+      "served": 1569
     }
   },
   "stats": {
     "benzina": {
       "self": {
-        "count": 20148,
-        "mean": 2.1233,
-        "median": 2.119,
-        "min": 1.499,
+        "count": 20149,
+        "mean": 2.1355,
+        "median": 2.139,
+        "min": 1.558,
         "max": 2.699
       },
       "served": {
-        "count": 13783,
-        "mean": 2.2559,
-        "median": 2.289,
-        "min": 1.499,
+        "count": 13786,
+        "mean": 2.2682,
+        "median": 2.299,
+        "min": 1.569,
         "max": 2.699
       }
     },
     "gasolio": {
       "self": {
-        "count": 20186,
-        "mean": 2.2361,
-        "median": 2.238,
-        "min": 1.499,
+        "count": 20188,
+        "mean": 2.2501,
+        "median": 2.249,
+        "min": 1.544,
         "max": 2.799
       },
       "served": {
-        "count": 13766,
-        "mean": 2.3691,
-        "median": 2.399,
+        "count": 13769,
+        "mean": 2.3836,
+        "median": 2.409,
         "min": 1.599,
         "max": 2.8
       }
@@ -75,13 +75,13 @@
     "gpl": {
       "self": {
         "count": 162,
-        "mean": 0.7542,
-        "median": 0.739,
+        "mean": 0.7554,
+        "median": 0.7395,
         "min": 0.605,
         "max": 1.049
       },
       "served": {
-        "count": 4516,
+        "count": 4517,
         "mean": 0.7562,
         "median": 0.749,
         "min": 0.549,
@@ -90,64 +90,64 @@
     },
     "metano": {
       "self": {
-        "count": 125,
-        "mean": 1.759,
-        "median": 1.75,
+        "count": 126,
+        "mean": 1.7695,
+        "median": 1.751,
         "min": 1.29,
         "max": 2.269
       },
       "served": {
-        "count": 1572,
-        "mean": 1.8263,
-        "median": 1.799,
+        "count": 1569,
+        "mean": 1.8367,
+        "median": 1.839,
         "min": 1,
         "max": 2.599
       }
     },
     "benzina_plus": {
       "self": {
-        "count": 1362,
-        "mean": 2.2579,
-        "median": 2.269,
+        "count": 1365,
+        "mean": 2.27,
+        "median": 2.289,
         "min": 1.619,
         "max": 2.799
       },
       "served": {
-        "count": 1072,
-        "mean": 2.4372,
-        "median": 2.474,
+        "count": 1070,
+        "mean": 2.4488,
+        "median": 2.4925,
         "min": 1.699,
         "max": 2.899
       }
     },
     "diesel_plus": {
       "self": {
-        "count": 5091,
-        "mean": 2.3553,
-        "median": 2.344,
+        "count": 5090,
+        "mean": 2.3689,
+        "median": 2.354,
         "min": 1.617,
         "max": 2.839
       },
       "served": {
-        "count": 4300,
-        "mean": 2.5384,
-        "median": 2.549,
+        "count": 4302,
+        "mean": 2.5518,
+        "median": 2.569,
         "min": 1.639,
         "max": 2.999
       }
     },
     "hvo": {
       "self": {
-        "count": 2560,
-        "mean": 2.2175,
-        "median": 2.229,
+        "count": 2569,
+        "mean": 2.2321,
+        "median": 2.247,
         "min": 1.519,
         "max": 2.799
       },
       "served": {
-        "count": 1478,
-        "mean": 2.3777,
-        "median": 2.439,
+        "count": 1479,
+        "mean": 2.3917,
+        "median": 2.454,
         "min": 1.652,
         "max": 2.989
       }
@@ -156,78 +156,78 @@
   "trends": {
     "benzina": {
       "direction": "up",
-      "deltaCents": 6.6,
+      "deltaCents": 6.5,
       "daysBack": 7,
-      "today": 2.123,
-      "reference": 2.057,
-      "points": 41
+      "today": 2.136,
+      "reference": 2.07,
+      "points": 42
     },
     "gasolio": {
       "direction": "up",
-      "deltaCents": 6.6,
+      "deltaCents": 6.9,
       "daysBack": 7,
-      "today": 2.236,
-      "reference": 2.171,
-      "points": 41
+      "today": 2.25,
+      "reference": 2.181,
+      "points": 42
     },
     "gpl": {
       "direction": "flat",
-      "deltaCents": -0.1,
+      "deltaCents": 0,
       "daysBack": 7,
-      "today": 0.754,
+      "today": 0.755,
       "reference": 0.755,
-      "points": 41
+      "points": 42
     },
     "metano": {
       "direction": "up",
-      "deltaCents": 8.2,
+      "deltaCents": 7.6,
       "daysBack": 7,
-      "today": 1.759,
-      "reference": 1.677,
-      "points": 41
+      "today": 1.77,
+      "reference": 1.694,
+      "points": 42
     },
     "benzina_plus": {
       "direction": "up",
-      "deltaCents": 4.8,
+      "deltaCents": 4.9,
       "daysBack": 7,
-      "today": 2.258,
-      "reference": 2.21,
-      "points": 41
+      "today": 2.27,
+      "reference": 2.221,
+      "points": 42
     },
     "diesel_plus": {
       "direction": "up",
-      "deltaCents": 5.6,
+      "deltaCents": 6.1,
       "daysBack": 7,
-      "today": 2.355,
-      "reference": 2.299,
-      "points": 41
+      "today": 2.369,
+      "reference": 2.308,
+      "points": 42
     },
     "hvo": {
       "direction": "up",
-      "deltaCents": 6.4,
+      "deltaCents": 6.5,
       "daysBack": 7,
-      "today": 2.218,
-      "reference": 2.153,
-      "points": 41
+      "today": 2.232,
+      "reference": 2.167,
+      "points": 42
     }
   },
   "news": [
     {
-      "headline": "Benzina in aumento: +6.6¢ in 7 giorni",
-      "body": "La media nazionale benzina self è 2.123 €/L (rilevazione del 15 settembre 2026). Negli ultimi 7 giorni è passata da 2.057 a 2.123 €/L.",
-      "basis": "Confronto fra la media self di oggi e quella di circa 7 giorni fa, su 41 rilevazioni giornaliere in cronologia."
+      "headline": "Benzina in aumento: +6.5¢ in 7 giorni",
+      "body": "La media nazionale benzina self è 2.135 €/L (rilevazione del 16 settembre 2026). Negli ultimi 7 giorni è passata da 2.070 a 2.136 €/L.",
+      "basis": "Confronto fra la media self di oggi e quella di circa 7 giorni fa, su 42 rilevazioni giornaliere in cronologia."
     },
     {
-      "headline": "Gasolio in aumento: +6.6¢ in 7 giorni",
-      "body": "La media nazionale gasolio self è 2.236 €/L (rilevazione del 15 settembre 2026). Negli ultimi 7 giorni è passata da 2.171 a 2.236 €/L.",
-      "basis": "Confronto fra la media self di oggi e quella di circa 7 giorni fa, su 41 rilevazioni giornaliere in cronologia."
+      "headline": "Gasolio in aumento: +6.9¢ in 7 giorni",
+      "body": "La media nazionale gasolio self è 2.250 €/L (rilevazione del 16 settembre 2026). Negli ultimi 7 giorni è passata da 2.181 a 2.250 €/L.",
+      "basis": "Confronto fra la media self di oggi e quella di circa 7 giorni fa, su 42 rilevazioni giornaliere in cronologia."
     },
     {
       "headline": "Gli altri carburanti",
-      "body": "GPL sostanzialmente stabili; Metano in aumento. I prezzi mostrati sono quelli comunicati dai gestori al MIMIT alla data del 15 settembre 2026.",
+      "body": "GPL sostanzialmente stabili; Metano in aumento. I prezzi mostrati sono quelli comunicati dai gestori al MIMIT alla data del 16 settembre 2026.",
       "basis": "Trend settimanale delle medie self nazionali per GPL e metano."
     }
   ],
-  "historyPoints": 41,
+  "historyPoints": 42,
   "source": "MIMIT — Osservaprezzi Carburanti (IODL 2.0)"
 }
