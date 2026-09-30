@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-09-29T13:23:26.830Z",
-  "sourceExtractionDate": "2026-09-28",
-  "durationMs": 10183,
+  "generatedAt": "2026-09-30T13:04:18.518Z",
+  "sourceExtractionDate": "2026-09-29",
+  "durationMs": 15527,
   "rows": {
-    "anagraficaReceived": 23998,
-    "prezziReceived": 92803,
-    "stationsProduced": 21562,
-    "pricesAccepted": 89998,
-    "pricesRejected": 348
+    "anagraficaReceived": 23940,
+    "prezziReceived": 92909,
+    "stationsProduced": 21567,
+    "pricesAccepted": 90094,
+    "pricesRejected": 351
   },
   "rejections": {
     "outOfBoundsCoords": 116,
     "missingStation": 440,
-    "unknownFuel": 47,
-    "priceOutOfRange": 301,
+    "unknownFuel": 48,
+    "priceOutOfRange": 303,
     "nonNumericPrice": 0,
-    "duplicatePrice": 2017
+    "duplicatePrice": 2024
   },
   "unknownFuelSamples": [
     "F101",
