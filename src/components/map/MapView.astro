@@ -4,8 +4,9 @@ import { withBase } from '../../lib/site.ts';
  * Isola mappa MapLibre.
  * Carica i distributori da public/data/stations.json lato client, li raggruppa
  * in cluster (per reggere ~21k punti su mobile) e colora i marker singoli col
- * semaforo prezzi. La geolocalizzazione parte SOLO se l'utente preme il
- * bottone — mai automaticamente.
+ * semaforo prezzi. Il pulsante "Trova distributori vicino a me" non sta più
+ * sopra la mappa: è la prima azione dei controlli della pagina (index.astro),
+ * e la geolocalizzazione parte SOLO quando l'utente lo preme.
  *
  * Riceve il carburante iniziale come prop; il resto è gestito client-side.
  */
@@ -23,10 +24,6 @@ const dataUrl = withBase('/data/stations.json');
     <button id="zoom-in" class="map-btn" aria-label="Ingrandisci">+</button>
     <button id="zoom-out" class="map-btn" aria-label="Riduci">−</button>
   </div>
-
-  <button id="locate" class="locate-btn">
-    <span aria-hidden="true">◎</span> Trova distributori vicino a me
-  </button>
 
   <div class="map-legend">
     <span><i style="background:var(--price-good)"></i> conviene</span>
@@ -73,34 +70,6 @@ const dataUrl = withBase('/data/stations.json');
   }
   .map-btn:hover {
     background: var(--surface-alt);
-  }
-  .locate-btn {
-    position: absolute;
-    left: 10px;
-    right: 10px;
-    bottom: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    /* Superficie chiara con accento teal: la barra non compete più con la
-       mappa, che è il contenuto principale. Funzione e posizione invariate. */
-    background: var(--surface);
-    color: var(--accent);
-    border: 1px solid var(--border-strong);
-    box-shadow: 0 2px 10px rgb(16 36 33 / 12%);
-    padding: 11px;
-    border-radius: 9px;
-    font-family: var(--font-body);
-    font-size: var(--fs-sm);
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .locate-btn:hover,
-  .locate-btn:focus-visible {
-    background: var(--accent);
-    color: var(--surface);
-    border-color: var(--accent);
   }
   .map-legend {
     display: flex;

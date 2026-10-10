@@ -11,7 +11,6 @@ import MapView from '../components/map/MapView.astro';
 import Wordmark from '../components/brand/Wordmark.astro';
 import {
   loadMeta,
-  formatPrice,
   formatDate,
   freshnessLabel,
   FUEL_DISPLAY_ORDER,
@@ -19,9 +18,21 @@ import {
 } from '../lib/data/load.ts';
 import { getTerritory } from '../lib/geo/loadTerritory.ts';
 import { BASE } from '../lib/site.ts';
+import {
+  buildAverageTable,
+  averageFor,
+  averageLabel,
+  formatAverage,
+  SELF_UNAVAILABLE,
+} from '../lib/data/nationalAverage.ts';
 
 const meta = loadMeta();
-const benzina = meta?.stats?.benzina;
+// Medie nazionali di TUTTI i carburanti, dalla stessa fonte della pipeline
+// (meta.stats). Il carburante iniziale è il primo chip; gli altri vengono
+// letti dal browser quando l'utente cambia carburante.
+const initialFuel = FUEL_DISPLAY_ORDER[0];
+const averages = buildAverageTable(meta?.stats, FUEL_DISPLAY_ORDER);
+const initialAverage = averageFor(averages, initialFuel);
 const total = meta?.total ?? 0;
 const extractionDate = meta?.sourceExtractionDate
   ? formatDate(meta.sourceExtractionDate)
@@ -69,22 +80,41 @@ const baseUrl = BASE;
   <main class="container" id="contenuto">
    <div class="home-grid">
     <div class="home-controls">
+    <!-- 1. Posizione: prima azione. Il permesso viene chiesto SOLO al click. -->
+    <div class="locate-block">
+      <button id="locate" class="locate-cta" type="button" aria-describedby="locate-status">
+        <svg class="locate-icon" aria-hidden="true" viewBox="0 0 24 24" width="18" height="18">
+          <path
+            fill="currentColor"
+            d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"
+          ></path>
+        </svg>
+        Trova distributori vicino a me
+      </button>
+      <p id="locate-status" class="locate-status" role="status" aria-live="polite"></p>
+    </div>
+
+    <p class="or-sep"><span>oppure</span></p>
+
     <form class="search" role="search" onsubmit="return false;">
-      <label class="sr-only" for="q">Cerca località</label>
+      <label class="sr-only" for="q">Cerca città o comune</label>
       <span class="search-icon" aria-hidden="true">⌕</span>
       <input
         id="q"
         type="search"
-        placeholder="Cerca una città"
+        placeholder="Cerca città o comune"
         autocomplete="off"
       />
     </form>
 
-    <div class="fuels" role="tablist" aria-label="Scegli il carburante">
+    <!-- 2. Carburante: tutti visibili, vanno a capo invece di scorrere. -->
+    <p class="control-label" id="fuel-label">Carburante</p>
+    <div class="fuels" role="tablist" aria-labelledby="fuel-label">
       {
         FUEL_DISPLAY_ORDER.map((fuel, i) => (
           <button
             class:list={['fuel-chip', { active: i === 0 }]}
+            type="button"
             role="tab"
             aria-selected={i === 0 ? 'true' : 'false'}
             data-fuel={fuel}
@@ -93,35 +123,48 @@ const baseUrl = BASE;
           </button>
         ))
       }
-      <button id="filters-trigger" class="filters-trigger" type="button">
-        <span aria-hidden="true">⚙</span> Filtri
-        <span id="filters-badge" class="filters-trigger-badge" hidden>0</span>
-      </button>
     </div>
 
-    <section class="totem" aria-label="Prezzo medio nazionale">
-      <div class="totem-label">Media nazionale benzina · self</div>
+    <!-- 3. Filtri avanzati: secondari, mai aperti in automatico. -->
+    <button id="filters-trigger" class="filters-trigger" type="button" aria-haspopup="dialog">
+      <span aria-hidden="true">⚙</span>
+      <span>Altri filtri</span><span id="filters-badge" class="filters-trigger-badge" hidden></span>
+    </button>
+
+    <!-- 4. Dato riassuntivo: segue sempre il carburante selezionato. -->
+    <section
+      class="totem"
+      id="national-average"
+      aria-labelledby="totem-label"
+      aria-live="polite"
+      data-averages={JSON.stringify(averages)}
+    >
+      <div class="totem-label" id="totem-label">
+        {averageLabel(FUEL_UI_LABELS[initialFuel], initialAverage.self != null)}
+      </div>
       <div class="totem-row">
-        <div class="totem-main">
-          <span class="totem-price">{formatPrice(benzina?.self?.mean)}</span>
+        <div class="totem-main" data-avg-main hidden={initialAverage.self == null}>
+          <span class="totem-price" data-avg-self>
+            {initialAverage.self != null ? formatAverage(initialAverage.self) : ''}
+          </span>
           <span class="totem-unit">€/L</span>
         </div>
-        {
-          benzina?.served && (
-            <div class="totem-served">
-              <span class="totem-served-label">servito</span>
-              <span class="totem-served-price">
-                {formatPrice(benzina.served.mean)}
-              </span>
-            </div>
-          )
-        }
+        <p class="totem-empty" data-avg-empty hidden={initialAverage.self != null}>
+          {SELF_UNAVAILABLE}
+        </p>
+        <div class="totem-served" data-avg-served-box hidden={initialAverage.served == null}>
+          <span class="totem-served-label">servito</span>
+          <span class="totem-served-price" data-avg-served>
+            {initialAverage.served != null ? formatAverage(initialAverage.served) : ''}
+          </span>
+        </div>
       </div>
     </section>
     </div>
 
+    <!-- 5. Mappa -->
     <div class="home-map">
-      <MapView initialFuel="benzina" />
+      <MapView initialFuel={initialFuel} />
     </div>
 
     <div class="home-tools">
@@ -259,6 +302,13 @@ const baseUrl = BASE;
   .home-grid {
     display: block;
   }
+  /* Quando la mappa viene portata in vista resta un filo di respiro sopra. */
+  .home-map {
+    scroll-margin-top: var(--space-3);
+  }
+  .home-map :global(.map-wrap) {
+    scroll-margin-top: var(--space-3);
+  }
   .home-tools {
     display: flex;
     flex-direction: column;
@@ -325,27 +375,100 @@ const baseUrl = BASE;
     font-size: var(--fs-base);
   }
 
-  .fuels {
+  /* --- Posizione: la prima azione. Piena su mobile, dove è la scorciatoia
+     principale; su desktop diventa contornata (vedi media query). */
+  .locate-cta {
+    width: 100%;
+    min-height: 48px;
     display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 2px;
-    margin-bottom: var(--space-4);
-    scrollbar-width: none;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    background: var(--accent);
+    color: #fff; /* 6,52:1 su #066A63 */
+    font-family: var(--font-body);
+    font-size: var(--fs-base);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
   }
-  .fuels::-webkit-scrollbar {
-    display: none;
+  .locate-cta:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
+  .locate-cta[aria-busy='true'] {
+    cursor: progress;
+    opacity: 0.85;
+  }
+  .locate-icon {
+    flex: 0 0 auto;
+  }
+  /* Messaggio discreto: nessun alert, nessun blocco. Vuoto non occupa spazio
+     ma resta nel DOM, così gli screen reader annunciano i cambi. */
+  .locate-status {
+    margin: 6px 2px 0;
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+  .locate-status:empty {
+    margin: 0;
+  }
+
+  .or-sep {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin: var(--space-2) 0;
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+    text-transform: lowercase;
+  }
+  .or-sep::before,
+  .or-sep::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .control-label {
+    margin: var(--space-4) 0 6px;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Carburanti: griglia che va a capo, mai scorrimento orizzontale. Le
+     colonne hanno larghezza minima sufficiente per l'etichetta più lunga
+     ("Benzina+"), quindi il numero per riga si adatta allo spazio:
+     4 + 3 su telefono e nella colonna desktop, una riga sola sul tablet. */
+  .fuels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(74px, 1fr));
+    gap: 6px;
+    margin-bottom: var(--space-3);
   }
   .fuel-chip {
-    flex: 0 0 auto;
-    padding: 6px 13px;
+    min-width: 0;
+    min-height: 40px;
+    padding: 6px 8px;
     border-radius: var(--radius-sm);
-    border: 0.5px solid var(--border);
+    border: 1px solid var(--border);
     background: var(--surface);
     color: var(--text);
     font-family: var(--font-body);
     font-size: var(--fs-sm);
+    white-space: nowrap;
     cursor: pointer;
+  }
+  .fuel-chip:hover {
+    border-color: var(--accent);
   }
   .fuel-chip.active {
     background: var(--brand);
@@ -360,8 +483,18 @@ const baseUrl = BASE;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 14px 18px;
-    margin-bottom: var(--space-4);
+    padding: 12px 16px;
+    margin: var(--space-3) 0 var(--space-4);
+  }
+  /* `hidden` deve vincere sul display:flex delle parti del riquadro. */
+  .totem [hidden] {
+    display: none;
+  }
+  .totem-empty {
+    margin: 4px 0;
+    font-size: var(--fs-base);
+    font-weight: 600;
+    color: var(--text-muted);
   }
   .totem-label {
     font-size: var(--fs-xs);
@@ -371,8 +504,9 @@ const baseUrl = BASE;
   }
   .totem-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
-    gap: 10px;
+    gap: 4px 10px;
     margin-top: 5px;
   }
   .totem-main {
@@ -590,6 +724,23 @@ const baseUrl = BASE;
     .home-controls {
       grid-area: controlli;
     }
+    /* Nella colonna desktop sempre 4 + 3: con auto-fit a 1440 px sarebbero
+       5 + 2, una seconda riga sbilanciata. */
+    .fuels {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    /* Su desktop la posizione resta la prima voce ma pesa meno: contornata,
+       così non compete con la mappa che sta accanto. */
+    .locate-cta {
+      min-height: 44px;
+      background: var(--surface);
+      color: var(--accent);
+      font-size: var(--fs-sm);
+    }
+    .locate-cta:hover {
+      background: var(--accent);
+      color: #fff;
+    }
     .home-tools {
       grid-area: strumenti;
     }
@@ -627,16 +778,69 @@ const baseUrl = BASE;
   import { initSearch } from '../lib/search/client.ts';
   import { initFilters } from '../lib/filters/client.ts';
   import { FUEL_UI_LABELS } from '../lib/data/fuels-ui.ts';
+  import {
+    averageFor,
+    averageLabel,
+    formatAverage,
+    type AverageTable,
+  } from '../lib/data/nationalAverage.ts';
   import type { Station, FuelKey } from '../types/pieno.ts';
 
-  // Carburante corrente (letto dai chip).
+  // Hook esposti dalla mappa (lib/map/client.ts) quando è pronta.
+  const w = window as unknown as {
+    __pienoFlyTo?: (lat: number, lng: number, zoom: number) => void;
+    __pienoGetStations?: () => Station[];
+    __pienoApplyFilter?: (pred: (s: Station) => boolean) => void;
+    __pienoSetFuel?: (f: FuelKey) => void;
+    __pienoMapReady?: boolean;
+  };
+
+  const mapWrap = document.querySelector<HTMLElement>('.map-wrap');
+  const mapInitialFuel = (mapWrap?.dataset.fuel ?? 'benzina') as FuelKey;
+
+  // Carburante corrente (letto dai chip): unica fonte per pagina e mappa.
   function currentFuel(): FuelKey {
     const active = document.querySelector('.fuel-chip.active');
-    return (active?.getAttribute('data-fuel') ?? 'benzina') as FuelKey;
+    return (active?.getAttribute('data-fuel') ?? mapInitialFuel) as FuelKey;
   }
 
-  // Cambio carburante: aggiorna i chip e notifica la mappa.
-  const chips = document.querySelectorAll('.fuel-chip');
+  // ---------------------------------------------------- media nazionale
+  // I valori arrivano da meta.stats, serializzati in build nel riquadro. Se un
+  // carburante non ha una media self valida si mostra "Dato self non
+  // disponibile" (il servito, se c'è, resta etichettato come tale): mai
+  // il valore di un altro carburante.
+  const totem = document.getElementById('national-average');
+  let averages: AverageTable = {};
+  try {
+    averages = JSON.parse(totem?.dataset.averages ?? '{}') as AverageTable;
+  } catch {
+    averages = {};
+  }
+
+  function renderAverage(fuel: FuelKey): void {
+    if (!totem) return;
+    const avg = averageFor(averages, fuel);
+    const q = <T extends HTMLElement>(sel: string) => totem.querySelector<T>(sel);
+    const label = q('#totem-label');
+    if (label) label.textContent = averageLabel(FUEL_UI_LABELS[fuel], avg.self != null);
+
+    const main = q('[data-avg-main]');
+    const empty = q('[data-avg-empty]');
+    const self = q('[data-avg-self]');
+    if (self) self.textContent = avg.self != null ? formatAverage(avg.self) : '';
+    if (main) main.hidden = avg.self == null;
+    if (empty) empty.hidden = avg.self != null;
+
+    const servedBox = q('[data-avg-served-box]');
+    const served = q('[data-avg-served]');
+    if (served) served.textContent = avg.served != null ? formatAverage(avg.served) : '';
+    if (servedBox) servedBox.hidden = avg.served == null;
+  }
+
+  // ---------------------------------------------------- cambio carburante
+  // Chip, media nazionale e mappa si aggiornano nello stesso click. Se la mappa
+  // non è ancora pronta, il carburante scelto le viene passato appena lo è.
+  const chips = document.querySelectorAll<HTMLElement>('.fuel-chip');
   chips.forEach((chip) => {
     chip.addEventListener('click', () => {
       chips.forEach((c) => {
@@ -645,36 +849,117 @@ const baseUrl = BASE;
       });
       chip.classList.add('active');
       chip.setAttribute('aria-selected', 'true');
-      const fuel = chip.getAttribute('data-fuel');
-      const w = window as unknown as { __pienoSetFuel?: (f: FuelKey) => void };
-      if (w.__pienoSetFuel && fuel) w.__pienoSetFuel(fuel as FuelKey);
+      const fuel = currentFuel();
+      renderAverage(fuel);
+      if (w.__pienoSetFuel) w.__pienoSetFuel(fuel);
     });
   });
+  renderAverage(currentFuel());
 
-  // Ricerca città + filtri: collega alla mappa quando è pronta.
-  const w = window as unknown as {
-    __pienoFlyTo?: (lat: number, lng: number, zoom: number) => void;
-    __pienoGetStations?: () => Station[];
-    __pienoApplyFilter?: (pred: (s: Station) => boolean) => void;
-  };
-  const base = document.querySelector<HTMLElement>('.map-wrap')?.dataset.dataUrl ?? '';
+  // ---------------------------------------------------- spostare la mappa
+  // Ricerca e posizione funzionano anche prima che la mappa sia pronta: lo
+  // spostamento richiesto viene applicato appena la mappa esiste.
+  let pendingFly: [number, number, number] | null = null;
+
+  function revealMap(): void {
+    // Su telefono la mappa sta sotto i controlli: se è quasi tutta fuori
+    // schermo la portiamo in vista, altrimenti l'utente non vede il risultato.
+    const el = document.querySelector<HTMLElement>('.map-wrap');
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const visible = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0);
+    if (visible >= Math.min(r.height, window.innerHeight) / 2) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  function flyTo(lat: number, lng: number, zoom: number): void {
+    if (w.__pienoFlyTo) w.__pienoFlyTo(lat, lng, zoom);
+    else pendingFly = [lat, lng, zoom];
+    revealMap();
+  }
+
+  // ---------------------------------------------------- posizione
+  // Il permesso viene chiesto SOLO qui, al click. Nessun alert: in caso di
+  // rifiuto o errore compare un messaggio discreto e la ricerca resta lì sotto.
+  const locateBtn = document.getElementById('locate');
+  const locateStatus = document.getElementById('locate-status');
+  const LOCATE_FAILED = 'Posizione non disponibile. Cerca una località.';
+  let locating = false;
+  let locateGuard: ReturnType<typeof setTimeout> | undefined;
+
+  function setLocateStatus(msg: string): void {
+    if (locateStatus) locateStatus.textContent = msg;
+  }
+  function endLocate(): void {
+    locating = false;
+    clearTimeout(locateGuard);
+    locateBtn?.removeAttribute('aria-busy');
+  }
+
+  locateBtn?.addEventListener('click', () => {
+    if (locating) return;
+    if (!('geolocation' in navigator)) {
+      setLocateStatus(LOCATE_FAILED);
+      return;
+    }
+    locating = true;
+    locateBtn.setAttribute('aria-busy', 'true');
+    setLocateStatus('Sto cercando la tua posizione…');
+    // Il timeout dell'API non conta il tempo in cui il prompt del permesso
+    // resta senza risposta: se l'utente lo ignora, dopo 20 s diciamo comunque
+    // che può cercare a mano. Se la posizione arriva dopo, la usiamo lo stesso.
+    locateGuard = setTimeout(() => {
+      endLocate();
+      setLocateStatus(LOCATE_FAILED);
+    }, 20_000);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        endLocate();
+        setLocateStatus('Mappa centrata sulla tua posizione.');
+        flyTo(pos.coords.latitude, pos.coords.longitude, 13);
+      },
+      () => {
+        endLocate();
+        setLocateStatus(LOCATE_FAILED);
+      },
+      // Senza timeout alcuni browser restano in attesa per sempre quando la
+      // localizzazione del dispositivo è spenta.
+      { timeout: 15_000, maximumAge: 60_000 },
+    );
+  });
+
+  // ---------------------------------------------------- ricerca
+  // Serve solo l'indice dei comuni: si attiva subito, senza aspettare la mappa.
+  const base = mapWrap?.dataset.dataUrl ?? '';
   const indexUrl = base.replace('stations.json', 'search-index.json');
+  initSearch({ flyTo, indexUrl });
 
-  function tryInit(attempts = 0): void {
-    if (w.__pienoFlyTo && w.__pienoGetStations && w.__pienoApplyFilter) {
-      initSearch({
-        flyTo: (lat, lng, zoom) => w.__pienoFlyTo!(lat, lng, zoom),
-        indexUrl,
-      });
-      initFilters({
-        getStations: () => w.__pienoGetStations!(),
-        applyFilter: (pred) => w.__pienoApplyFilter!(pred),
-        getFuel: currentFuel,
-        fuelLabel: (f) => FUEL_UI_LABELS[f],
-      });
-    } else if (attempts < 50) {
-      setTimeout(() => tryInit(attempts + 1), 100);
+  // ---------------------------------------------------- filtri e mappa pronta
+  // I filtri hanno bisogno delle stazioni caricate dalla mappa (il dataset
+  // nazionale pesa alcuni MB). Nessun timeout: la mappa emette
+  // "pieno:map-ready" quando gli hook sono pronti, per quanto tempo serva.
+  let mapReadyHandled = false;
+  function onMapReady(): void {
+    if (mapReadyHandled) return; // initFilters una volta sola
+    mapReadyHandled = true;
+    initFilters({
+      getStations: () => w.__pienoGetStations!(),
+      applyFilter: (pred) => w.__pienoApplyFilter!(pred),
+      getFuel: currentFuel,
+      fuelLabel: (f) => FUEL_UI_LABELS[f],
+    });
+    // Carburante scelto prima che la mappa fosse pronta.
+    if (currentFuel() !== mapInitialFuel && w.__pienoSetFuel) w.__pienoSetFuel(currentFuel());
+    if (pendingFly) {
+      const [lat, lng, zoom] = pendingFly;
+      pendingFly = null;
+      w.__pienoFlyTo!(lat, lng, zoom);
     }
   }
-  tryInit();
+
+  // Se la mappa è già pronta quando arriviamo, inizializziamo subito;
+  // altrimenti aspettiamo il segnale.
+  if (w.__pienoMapReady) onMapReady();
+  else window.addEventListener('pieno:map-ready', onMapReady, { once: true });
 </script>

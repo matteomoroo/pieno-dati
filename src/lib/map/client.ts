@@ -338,24 +338,9 @@ export async function initMap({ dataUrl, initialFuel }: InitOptions): Promise<vo
     map.once('load', setupStationsLayer);
   }
 
-  const locate = document.getElementById('locate');
-  if (locate) {
-    locate.onclick = () => {
-      if (!navigator.geolocation) {
-        alert('La geolocalizzazione non è disponibile su questo dispositivo.');
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          map.flyTo({
-            center: [pos.coords.longitude, pos.coords.latitude],
-            zoom: 13,
-          });
-        },
-        () => alert('Non è stato possibile ottenere la posizione.'),
-      );
-    };
-  }
+  // Il pulsante "Trova distributori vicino a me" è gestito dalla pagina
+  // (index.astro): deve funzionare anche prima che la mappa sia pronta e
+  // usa __pienoFlyTo come la ricerca.
 
   // Hook per la ricerca: spostare la mappa e leggere le stazioni caricate.
   const w = window as unknown as {
@@ -399,4 +384,9 @@ export async function initMap({ dataUrl, initialFuel }: InitOptions): Promise<vo
     if (onFuel) onFuel(fuel);
     void prevSetFuel;
   };
+
+  // Tutti gli hook __pieno* sono esposti: lo segnaliamo in modo esplicito.
+  // Il flag serve a chi si mette in ascolto dopo che l'evento è già partito.
+  (window as unknown as { __pienoMapReady?: boolean }).__pienoMapReady = true;
+  window.dispatchEvent(new CustomEvent('pieno:map-ready'));
 }
