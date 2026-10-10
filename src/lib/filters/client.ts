@@ -99,12 +99,21 @@ export function initFilters(deps: FiltersDeps): void {
     return n;
   }
 
+  // Etichetta del trigger: "Altri filtri", oppure "Altri filtri · 2" quando
+  // ci sono filtri attivi. Cambia solo la presentazione del conteggio.
   function updateBadge(): void {
     const badge = document.getElementById('filters-badge');
     const n = activeCount();
     if (badge) {
-      badge.textContent = String(n);
+      badge.textContent = n > 0 ? ` · ${n}` : '';
       badge.hidden = n === 0;
+    }
+    if (trigger) {
+      trigger.classList.toggle('has-active', n > 0);
+      trigger.setAttribute(
+        'aria-label',
+        n === 0 ? 'Altri filtri' : `Altri filtri · ${n} ${n === 1 ? 'attivo' : 'attivi'}`,
+      );
     }
   }
 
